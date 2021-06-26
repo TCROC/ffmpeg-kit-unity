@@ -43,7 +43,7 @@ fi
 # FILTER WHICH EXTERNAL LIBRARIES WILL BE BUILT
 # NOTE THAT BUILT-IN LIBRARIES ARE FORWARDED TO FFMPEG SCRIPT WITHOUT ANY PROCESSING
 enabled_library_list=()
-for library in {1..47}; do
+for library in {1..47} {59..60}; do
   if [[ ${!library} -eq 1 ]]; then
     ENABLED_LIBRARY=$(get_library_name $((library - 1)))
     enabled_library_list+=(${ENABLED_LIBRARY})
@@ -150,6 +150,11 @@ while [ ${#enabled_library_list[@]} -gt $completed ]; do
       ;;
     twolame)
       if [[ $OK_libsndfile -eq 1 ]]; then
+        run=1
+      fi
+      ;;
+    libsrt)
+      if [[ $OK_gnutls -eq 1 ]]; then
         run=1
       fi
       ;;

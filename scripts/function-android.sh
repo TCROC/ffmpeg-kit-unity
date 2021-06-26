@@ -355,6 +355,9 @@ get_cxxflags() {
   rubberband)
     echo "-std=c++11 ${OPTIMIZATION_FLAGS}"
     ;;
+  libsrt)
+    echo "${OPTIMIZATION_FLAGS}"
+    ;;
   *)
     echo "-std=c++11 -fno-exceptions -fno-rtti ${OPTIMIZATION_FLAGS}"
     ;;

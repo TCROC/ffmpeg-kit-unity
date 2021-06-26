@@ -33,9 +33,10 @@ get_library_source() {
     ;;
   ffmpeg)
     SOURCE_REPO_URL="https://github.com/tanersener/FFmpeg"
-    SOURCE_ID="c0d0b1c4f6f804796488adf3e552be88c0cee1a4"
+    #SOURCE_ID="c0d0b1c4f6f804796488adf3e552be88c0cee1a4"
+    SOURCE_ID="c9a79532e5ec4ea265d3a82f185fca6e196088c2"
     SOURCE_TYPE="COMMIT"
-    SOURCE_GIT_DESCRIBE="n4.4-dev-3015-gc0d0b1c4f6" # git describe --tags
+    #SOURCE_GIT_DESCRIBE="n4.4-dev-3015-gc0d0b1c4f6" # git describe --tags
     ;;
   fontconfig)
     SOURCE_REPO_URL="https://github.com/tanersener/fontconfig"
@@ -169,7 +170,8 @@ get_library_source() {
     ;;
   nettle)
     SOURCE_REPO_URL="https://github.com/tanersener/nettle"
-    SOURCE_ID="nettle_3.7_release_20210104"
+    #SOURCE_ID="nettle_3.7_release_20210104"
+    SOURCE_ID="nettle_3.7.2_release_20210321"
     SOURCE_TYPE="TAG"
     ;;
   opencore-amr)
@@ -250,6 +252,11 @@ get_library_source() {
   xvidcore)
     SOURCE_REPO_URL="https://github.com/tanersener/xvidcore"
     SOURCE_ID="release-1_3_7"
+    SOURCE_TYPE="TAG"
+    ;;
+  libsrt)
+    SOURCE_REPO_URL="https://github.com/Haivision/srt"
+    SOURCE_ID="v1.4.3"
     SOURCE_TYPE="TAG"
     ;;
   esac

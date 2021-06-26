@@ -135,7 +135,7 @@ fi
 
 # PROCESS FULL OPTION AS LAST OPTION
 if [[ -n ${BUILD_FULL} ]]; then
-  for library in {0..58}; do
+  for library in {0..59} {59..60}; do
     if [ ${GPL_ENABLED} == "yes" ]; then
       enable_library "$(get_library_name $library)" 1
     else
@@ -207,7 +207,7 @@ for run_arch in {0..12}; do
     . "${BASEDIR}"/scripts/main-android.sh "${ENABLED_LIBRARIES[@]}" || exit 1
 
     # CLEAR FLAGS
-    for library in {0..58}; do
+    for library in {0..59} {59..60}; do
       library_name=$(get_library_name ${library})
       unset "$(echo "OK_${library_name}" | sed "s/\-/\_/g")"
       unset "$(echo "DEPENDENCY_REBUILT_${library_name}" | sed "s/\-/\_/g")"
@@ -286,7 +286,7 @@ if [[ -n ${ANDROID_ARCHITECTURES} ]]; then
     echo -e -n "\nCreating Android archive under prebuilt: "
 
     # BUILD ANDROID ARCHIVE
-    ./gradlew ffmpeg-kit-android-lib:clean ffmpeg-kit-android-lib:assembleRelease ffmpeg-kit-android-lib:testReleaseUnitTest 1>>"${BASEDIR}"/build.log 2>&1
+    gradle ffmpeg-kit-android-lib:clean ffmpeg-kit-android-lib:assembleRelease ffmpeg-kit-android-lib:testReleaseUnitTest 1>>"${BASEDIR}"/build.log 2>&1
     if [ $? -ne 0 ]; then
       echo -e "failed\n"
       exit 1

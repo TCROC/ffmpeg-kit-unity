@@ -54,6 +54,7 @@ fi
   --disable-full-test-suite \
   --host="${HOST}" || return 1
 
+touch src/gl/parse-datetime.c
 make -j$(get_cpu_count) || return 1
 
 make install || return 1

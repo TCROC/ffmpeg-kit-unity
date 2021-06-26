@@ -20,6 +20,8 @@
 #ifndef FFMPEG_KIT_SAF_WRAPPER_H
 #define FFMPEG_KIT_SAF_WRAPPER_H
 
+#define ff_const59 const
+
 /*
  *  These wrappers are intended to be used instead of the ffmpeg apis.
  *  You don't even need to change the source to call them.

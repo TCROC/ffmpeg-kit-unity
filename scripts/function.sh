@@ -173,6 +173,7 @@ get_library_name() {
       echo "macos-opengl"
     fi
     ;;
+  59) echo "libsrt" ;;
   esac
 }
 
@@ -237,6 +238,7 @@ from_library_name() {
   macos-coreimage) echo 56 ;;
   macos-opencl) echo 57 ;;
   macos-opengl) echo 58 ;;
+  libsrt) echo 59 ;;
   esac
 }
 
@@ -253,6 +255,9 @@ is_library_supported_on_platform() {
     echo "0"
     ;;
   41 | 42 | 43 | 44 | 45)
+    echo "0"
+    ;;
+  59)
     echo "0"
     ;;
 
@@ -657,7 +662,7 @@ reconf_library() {
   local RECONF_VARIABLE=$(echo "RECONF_$1" | sed "s/\-/\_/g")
   local library_supported=0
 
-  for library in {0..46}; do
+  for library in {0..46} {59..60}; do
     library_name=$(get_library_name ${library})
     local library_supported_on_platform=$(is_library_supported_on_platform "${library_name}")
 
@@ -680,7 +685,7 @@ rebuild_library() {
   local REBUILD_VARIABLE=$(echo "REBUILD_$1" | sed "s/\-/\_/g")
   local library_supported=0
 
-  for library in {0..46}; do
+  for library in {0..46} {59..60}; do
     library_name=$(get_library_name ${library})
     local library_supported_on_platform=$(is_library_supported_on_platform "${library_name}")
 
@@ -703,7 +708,7 @@ redownload_library() {
   local REDOWNLOAD_VARIABLE=$(echo "REDOWNLOAD_$1" | sed "s/\-/\_/g")
   local library_supported=0
 
-  for library in {0..46}; do
+  for library in {0..46} {59..60}; do
     library_name=$(get_library_name ${library})
     local library_supported_on_platform=$(is_library_supported_on_platform "${library_name}")
 
@@ -951,6 +956,9 @@ set_library() {
     ENABLED_LIBRARIES[LIBRARY_TIFF]=$2
     ENABLED_LIBRARIES[LIBRARY_JPEG]=$2
     ;;
+  libsrt)
+    ENABLED_LIBRARIES[LIBRARY_LIBSRT]=$2
+    ;;
   *)
     print_unknown_library $1
     ;;
@@ -1191,7 +1199,7 @@ print_enabled_libraries() {
   let enabled=0
 
   # SUPPLEMENTARY LIBRARIES NOT PRINTED
-  for library in {47..54} {56..58} {0..33}; do
+  for library in {47..54} {56..59} {0..33}; do
     if [[ ${ENABLED_LIBRARIES[$library]} -eq 1 ]]; then
       if [[ ${enabled} -ge 1 ]]; then
         echo -n ", "
@@ -1214,7 +1222,7 @@ print_enabled_xcframeworks() {
   let enabled=0
 
   # SUPPLEMENTARY LIBRARIES NOT PRINTED
-  for library in {0..46}; do
+  for library in {0..46} {59..60}; do
     if [[ ${ENABLED_LIBRARIES[$library]} -eq 1 ]]; then
       if [[ ${enabled} -ge 1 ]]; then
         echo -n ", "
@@ -1534,7 +1542,7 @@ downloaded_enabled_library_sources() {
     exit 1
   fi
 
-  for library in {1..47}; do
+  for library in {1..47} {59..60}; do
     if [[ ${!library} -eq 1 ]]; then
       library_name=$(get_library_name $((library - 1)))
 

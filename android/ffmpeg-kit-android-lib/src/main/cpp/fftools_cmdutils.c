@@ -2151,7 +2151,7 @@ int check_stream_specifier(AVFormatContext *s, AVStream *st, const char *spec)
 }
 
 AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
-                                AVFormatContext *s, AVStream *st, AVCodec *codec)
+                                AVFormatContext *s, AVStream *st, const AVCodec *codec)
 {
     AVDictionary    *ret = NULL;
     AVDictionaryEntry *t = NULL;
@@ -2193,7 +2193,7 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
         if (av_opt_find(&cc, t->key, NULL, flags, AV_OPT_SEARCH_FAKE_OBJ) ||
             !codec ||
             (codec->priv_class &&
-             av_opt_find(&codec->priv_class, t->key, NULL, flags,
+             av_opt_find((void *)&codec->priv_class, t->key, NULL, flags,
                          AV_OPT_SEARCH_FAKE_OBJ)))
             av_dict_set(&ret, t->key, t->value, 0);
         else if (t->key[0] == prefix &&
@@ -2266,7 +2266,7 @@ double get_rotation(AVStream *st)
 }
 
 #if CONFIG_AVDEVICE
-static int print_device_sources(AVInputFormat *fmt, AVDictionary *opts)
+static int print_device_sources(const AVInputFormat *fmt, AVDictionary *opts)
 {
     int ret, i;
     AVDeviceInfoList *device_list = NULL;
@@ -2296,7 +2296,7 @@ static int print_device_sources(AVInputFormat *fmt, AVDictionary *opts)
     return ret;
 }
 
-static int print_device_sinks(AVOutputFormat *fmt, AVDictionary *opts)
+static int print_device_sinks(const AVOutputFormat *fmt, AVDictionary *opts)
 {
     int ret, i;
     AVDeviceInfoList *device_list = NULL;
@@ -2350,7 +2350,7 @@ static int show_sinks_sources_parse_arg(const char *arg, char **dev, AVDictionar
 
 int show_sources(void *optctx, const char *opt, const char *arg)
 {
-    AVInputFormat *fmt = NULL;
+    const AVInputFormat *fmt = NULL;
     char *dev = NULL;
     AVDictionary *opts = NULL;
     int ret = 0;
@@ -2388,7 +2388,7 @@ int show_sources(void *optctx, const char *opt, const char *arg)
 
 int show_sinks(void *optctx, const char *opt, const char *arg)
 {
-    AVOutputFormat *fmt = NULL;
+    const AVOutputFormat *fmt = NULL;
     char *dev = NULL;
     AVDictionary *opts = NULL;
     int ret = 0;

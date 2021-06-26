@@ -72,7 +72,7 @@ CONFIGURE_POSTFIX=""
 HIGH_PRIORITY_INCLUDES=""
 
 # SET CONFIGURE OPTIONS
-for library in {1..58}; do
+for library in {1..60}; do
   if [[ ${!library} -eq 1 ]]; then
     ENABLED_LIBRARY=$(get_library_name $((library - 1)))
 
@@ -290,6 +290,13 @@ for library in {1..58}; do
       ;;
     android-media-codec)
       CONFIGURE_POSTFIX+=" --enable-mediacodec"
+      ;;
+    libsrt)
+      CFLAGS+=" $(pkg-config --cflags srt 2>>"${BASEDIR}"/build.log)"
+      LDFLAGS+=" $(pkg-config --libs --static srt 2>>"${BASEDIR}"/build.log)"
+      CFLAGS+=" $(pkg-config --cflags haisrt 2>>"${BASEDIR}"/build.log)"
+      LDFLAGS+=" $(pkg-config --libs --static haisrt 2>>"${BASEDIR}"/build.log)"
+      CONFIGURE_POSTFIX+=" --enable-libsrt"
       ;;
     esac
   else

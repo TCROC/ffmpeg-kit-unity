@@ -757,11 +757,11 @@ int opt_recording_timestamp(void *optctx, const char *opt, const char *arg)
     return 0;
 }
 
-AVCodec *find_codec_or_die(const char *name, enum AVMediaType type, int encoder)
+const AVCodec *find_codec_or_die(const char *name, enum AVMediaType type, int encoder)
 {
     const AVCodecDescriptor *desc;
     const char *codec_string = encoder ? "encoder" : "decoder";
-    AVCodec *codec;
+    const AVCodec *codec;
 
     codec = encoder ?
         avcodec_find_encoder_by_name(name) :
@@ -786,13 +786,13 @@ AVCodec *find_codec_or_die(const char *name, enum AVMediaType type, int encoder)
     return codec;
 }
 
-AVCodec *choose_decoder(OptionsContext *o, AVFormatContext *s, AVStream *st)
+const AVCodec *choose_decoder(OptionsContext *o, AVFormatContext *s, AVStream *st)
 {
     char *codec_name = NULL;
 
     MATCH_PER_STREAM_OPT(codec_names, str, codec_name, s, st);
     if (codec_name) {
-        AVCodec *codec = find_codec_or_die(codec_name, st->codecpar->codec_type, 0);
+        const AVCodec *codec = find_codec_or_die(codec_name, st->codecpar->codec_type, 0);
         st->codecpar->codec_id = codec->id;
         return codec;
     } else
@@ -846,7 +846,7 @@ void add_input_streams(OptionsContext *o, AVFormatContext *ic)
             st->codecpar->codec_tag = tag;
         }
 
-        ist->dec = choose_decoder(o, ic, st);
+        ist->dec = (AVCodec *)choose_decoder(o, ic, st);
         ist->decoder_opts = filter_codec_opts(o->g->codec_opts, ist->st->codecpar->codec_id, ic, st, ist->dec);
 
         ist->reinit_filters = -1;
@@ -887,7 +887,7 @@ void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         switch (par->codec_type) {
         case AVMEDIA_TYPE_VIDEO:
             if(!ist->dec)
-                ist->dec = avcodec_find_decoder(par->codec_id);
+                ist->dec = (AVCodec *)avcodec_find_decoder(par->codec_id);
 
             // avformat_find_stream_info() doesn't set this for us anymore.
             ist->dec_ctx->framerate = st->avg_frame_rate;
@@ -984,7 +984,7 @@ void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         case AVMEDIA_TYPE_SUBTITLE: {
             char *canvas_size = NULL;
             if(!ist->dec)
-                ist->dec = avcodec_find_decoder(par->codec_id);
+                ist->dec = (AVCodec *)avcodec_find_decoder(par->codec_id);
             MATCH_PER_STREAM_OPT(fix_sub_duration, i, ist->fix_sub_duration, ic, st);
             MATCH_PER_STREAM_OPT(canvas_sizes, str, canvas_size, ic, st);
             if (canvas_size &&
@@ -1088,7 +1088,7 @@ int open_input_file(OptionsContext *o, const char *filename)
 {
     InputFile *f;
     AVFormatContext *ic;
-    AVInputFormat *file_iformat = NULL;
+    const AVInputFormat *file_iformat = NULL;
     int err, i, ret;
     int64_t timestamp;
     AVDictionary *unused_opts = NULL;
@@ -1141,7 +1141,7 @@ int open_input_file(OptionsContext *o, const char *filename)
          * "channel_layout" options, we need to check that the specified
          * demuxer actually has the "channels" option before setting it */
         if (file_iformat && file_iformat->priv_class &&
-            av_opt_find(&file_iformat->priv_class, "channels", NULL, 0,
+            av_opt_find((void *)&file_iformat->priv_class, "channels", NULL, 0,
                         AV_OPT_SEARCH_FAKE_OBJ)) {
             av_dict_set_int(&o->g->format_opts, "channels", o->audio_channels[o->nb_audio_channels - 1].u.i, 0);
         }
@@ -1150,7 +1150,7 @@ int open_input_file(OptionsContext *o, const char *filename)
         /* set the format-level framerate option;
          * this is important for video grabbers, e.g. x11 */
         if (file_iformat && file_iformat->priv_class &&
-            av_opt_find(&file_iformat->priv_class, "framerate", NULL, 0,
+            av_opt_find((void *)&file_iformat->priv_class, "framerate", NULL, 0,
                         AV_OPT_SEARCH_FAKE_OBJ)) {
             av_dict_set(&o->g->format_opts, "framerate",
                         o->frame_rates[o->nb_frame_rates - 1].u.str, 0);
@@ -1413,7 +1413,7 @@ int choose_encoder(OptionsContext *o, AVFormatContext *s, OutputStream *ost)
         if (!codec_name) {
             ost->st->codecpar->codec_id = av_guess_codec(s->oformat, NULL, s->url,
                                                          NULL, ost->st->codecpar->codec_type);
-            ost->enc = avcodec_find_encoder(ost->st->codecpar->codec_id);
+            ost->enc = (AVCodec *)avcodec_find_encoder(ost->st->codecpar->codec_id);
             if (!ost->enc) {
                 av_log(NULL, AV_LOG_FATAL, "Automatic encoder selection failed for "
                        "output stream #%d:%d. Default encoder for format %s (codec %s) is "
@@ -1425,7 +1425,7 @@ int choose_encoder(OptionsContext *o, AVFormatContext *s, OutputStream *ost)
         } else if (!strcmp(codec_name, "copy"))
             ost->stream_copy = 1;
         else {
-            ost->enc = find_codec_or_die(codec_name, ost->st->codecpar->codec_type, 1);
+            ost->enc = (AVCodec *)find_codec_or_die(codec_name, ost->st->codecpar->codec_type, 1);
             ost->st->codecpar->codec_id = ost->enc->id;
         }
         ost->encoding_needed = !ost->stream_copy;
@@ -2287,8 +2287,8 @@ int open_output_file(OptionsContext *o, const char *filename)
             for (i = 0; i < nb_input_streams; i++) {
                 int score;
                 ist = input_streams[i];
-                score = ist->st->codecpar->channels + 100000000*!!ist->st->codec_info_nb_frames
-                        + 5000000*!!(ist->st->disposition & AV_DISPOSITION_DEFAULT);
+                score = (int)(ist->st->codecpar->channels + 100000000*!!ist->st->nb_frames/*ist->st->codec_info_nb_frames*/
+                        + 5000000*!!(ist->st->disposition & AV_DISPOSITION_DEFAULT));
                 if (ist->user_set_discard == AVDISCARD_ALL)
                     continue;
                 if (ist->st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&

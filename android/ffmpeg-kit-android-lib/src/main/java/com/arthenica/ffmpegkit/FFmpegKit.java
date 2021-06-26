@@ -150,6 +150,14 @@ public class FFmpegKit {
     public static FFmpegSession execute(final String command) {
         return execute(parseArguments(command));
     }
+    
+    public static FFmpegSession executeAsync(final String command) {
+        return executeAsync(parseArguments(command), new ExecuteCallback() {
+            public void apply(final Session session) {
+                
+            }
+        });
+    }
 
     /**
      * <p>Asynchronously executes FFmpeg command provided. Space character is used to split command
