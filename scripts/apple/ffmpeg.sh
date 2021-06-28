@@ -102,7 +102,7 @@ esac
 CONFIGURE_POSTFIX=""
 
 # SET CONFIGURE OPTIONS
-for library in {1..59}; do
+for library in {1..60}; do
   if [[ ${!library} -eq 1 ]]; then
     ENABLED_LIBRARY=$(get_library_name $((library - 1)))
 
@@ -294,6 +294,13 @@ for library in {1..59}; do
       FFMPEG_LDFLAGS+=" $(pkg-config --libs --static nettle 2>>"${BASEDIR}"/build.log)"
       FFMPEG_CFLAGS+=" $(pkg-config --cflags hogweed 2>>"${BASEDIR}"/build.log)"
       FFMPEG_LDFLAGS+=" $(pkg-config --libs --static hogweed 2>>"${BASEDIR}"/build.log)"
+      ;;
+    libsrt)
+      FFMPEG_CFLAGS+=" $(pkg-config --cflags srt 2>>"${BASEDIR}"/build.log)"
+      FFMPEG_LDFLAGS+=" $(pkg-config --libs --static srt 2>>"${BASEDIR}"/build.log)"
+      FFMPEG_CFLAGS+=" $(pkg-config --cflags haisrt 2>>"${BASEDIR}"/build.log)"
+      FFMPEG_LDFLAGS+=" $(pkg-config --libs --static haisrt 2>>"${BASEDIR}"/build.log)"
+      CONFIGURE_POSTFIX+=" --enable-libsrt"
       ;;
     ios-* | tvos-* | macos-*)
 

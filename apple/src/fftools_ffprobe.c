@@ -260,7 +260,7 @@ __thread OptionDef *ffprobe_options = NULL;
 /* FFprobe context */
 __thread const char *input_filename;
 __thread const char *print_input_filename;
-__thread AVInputFormat *iformat = NULL;
+__thread const AVInputFormat *iformat = NULL;
 
 __thread struct AVHashContext *hash;
 
@@ -2169,8 +2169,8 @@ static void show_packet(WriterContext *w, InputFile *ifile, AVPacket *pkt, int p
     print_time("dts_time",        pkt->dts, &st->time_base);
     print_duration_ts("duration",        pkt->duration);
     print_duration_time("duration_time", pkt->duration, &st->time_base);
-    print_duration_ts("convergence_duration", pkt->convergence_duration);
-    print_duration_time("convergence_duration_time", pkt->convergence_duration, &st->time_base);
+    //print_duration_ts("convergence_duration", pkt->convergence_duration);
+    //print_duration_time("convergence_duration_time", pkt->convergence_duration, &st->time_base);
     print_val("size",             pkt->size, unit_byte_str);
     if (pkt->pos != -1) print_fmt    ("pos", "%"PRId64, pkt->pos);
     else                print_str_opt("pos", "N/A");
@@ -2178,7 +2178,7 @@ static void show_packet(WriterContext *w, InputFile *ifile, AVPacket *pkt, int p
               pkt->flags & AV_PKT_FLAG_DISCARD ? 'D' : '_');
 
     if (pkt->side_data_elems) {
-        int size;
+        size_t size;
         const uint8_t *side_metadata;
 
         side_metadata = av_packet_get_side_data(pkt, AV_PKT_DATA_STRINGS_METADATA, &size);
@@ -3016,7 +3016,7 @@ static int open_input_file(InputFile *ifile, const char *filename, const char *p
     for (i = 0; i < fmt_ctx->nb_streams; i++) {
         InputStream *ist = &ifile->streams[i];
         AVStream *stream = fmt_ctx->streams[i];
-        AVCodec *codec;
+        const AVCodec *codec;
 
         ist->st = stream;
 

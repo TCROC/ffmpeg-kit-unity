@@ -1035,6 +1035,7 @@ get_static_archive_name() {
   42) echo "libsndfile" ;;
   43) echo "liblept" ;;
   44) echo "libsamplerate" ;;
+  59) echo "libsrt" ;;
   *) echo lib"$(get_library_name "$1")" ;;
   esac
 }

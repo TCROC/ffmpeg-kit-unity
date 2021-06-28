@@ -388,6 +388,7 @@ get_package_config_file_name() {
   43) echo "lept" ;;
   44) echo "samplerate" ;;
   55) echo "uuid" ;;
+  59) echo "srt" ;;
   *) echo "$(get_library_name "$1")" ;;
   esac
 }
@@ -1315,7 +1316,7 @@ get_external_library_license_path() {
   30) echo "${BASEDIR}/src/$(get_library_name "$1")/COPYING.txt" ;;
   38 | 40) echo "${BASEDIR}/src/$(get_library_name "$1")/COPYRIGHT" ;;
   43) echo "${BASEDIR}/src/$(get_library_name "$1")/leptonica-license.txt" ;;
-  4 | 10 | 13 | 21 | 27 | 31 | 32 | 37) echo "${BASEDIR}/src/$(get_library_name "$1")/LICENSE" ;;
+  4 | 10 | 13 | 21 | 27 | 31 | 32 | 37 | 59) echo "${BASEDIR}/src/$(get_library_name "$1")/LICENSE" ;;
   *) echo "${BASEDIR}/src/$(get_library_name "$1")/COPYING" ;;
   esac
 }

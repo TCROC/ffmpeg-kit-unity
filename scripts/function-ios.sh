@@ -278,6 +278,9 @@ get_cxxflags() {
   rubberband)
     echo "-fno-rtti ${BITCODE_FLAGS} ${COMMON_CFLAGS} ${OPTIMIZATION_FLAGS}"
     ;;
+  libsrt)
+    echo "${BITCODE_FLAGS} ${COMMON_CFLAGS} ${OPTIMIZATION_FLAGS}"
+    ;;
   *)
     echo "-std=c++11 -fno-exceptions -fno-rtti ${BITCODE_FLAGS} ${COMMON_CFLAGS} ${OPTIMIZATION_FLAGS}"
     ;;
@@ -501,7 +504,7 @@ create_universal_libraries_for_ios_default_frameworks() {
 
   echo -e "INFO: Building universal libraries in ${ROOT_UNIVERSAL_DIRECTORY_PATH} for default frameworks using ${TARGET_ARCH_LIST[@]}\n" 1>>"${BASEDIR}"/build.log 2>&1
 
-  for library in {0..46}; do
+  for library in {0..46} {59..60}; do
     if [[ ${ENABLED_LIBRARIES[$library]} -eq 1 ]]; then
       create_universal_library "${library}" "${ARCH_VAR_IOS}"
     fi
@@ -517,7 +520,7 @@ create_universal_libraries_for_ios_default_frameworks() {
 create_ios_default_frameworks() {
   echo -e "INFO: Building default frameworks\n" 1>>"${BASEDIR}"/build.log 2>&1
 
-  for library in {0..46}; do
+  for library in {0..46} {59..60}; do
     if [[ ${ENABLED_LIBRARIES[$library]} -eq 1 ]]; then
       create_framework "${library}" "${ARCH_VAR_IOS}"
     fi
@@ -533,7 +536,7 @@ create_ios_default_frameworks() {
 create_universal_libraries_for_ios_xcframeworks() {
   echo -e "INFO: Building universal libraries for xcframeworks using ${TARGET_ARCH_LIST[@]}\n" 1>>"${BASEDIR}"/build.log 2>&1
 
-  for library in {0..46}; do
+  for library in {0..46} {59..60}; do
     if [[ ${ENABLED_LIBRARIES[$library]} -eq 1 ]]; then
       create_universal_library "${library}" "${ARCH_VAR_IPHONEOS}"
       create_universal_library "${library}" "${ARCH_VAR_IPHONESIMULATOR}"
@@ -555,7 +558,7 @@ create_universal_libraries_for_ios_xcframeworks() {
 create_frameworks_for_ios_xcframeworks() {
   echo -e "INFO: Building frameworks for xcframeworks\n" 1>>"${BASEDIR}"/build.log 2>&1
 
-  for library in {0..46}; do
+  for library in {0..46} {59..60}; do
     if [[ ${ENABLED_LIBRARIES[$library]} -eq 1 ]]; then
       create_framework "${library}" "${ARCH_VAR_IPHONEOS}"
       create_framework "${library}" "${ARCH_VAR_IPHONESIMULATOR}"
@@ -578,7 +581,7 @@ create_ios_xcframeworks() {
   export ARCHITECTURE_VARIANT_ARRAY=("${ARCH_VAR_IPHONEOS}" "${ARCH_VAR_IPHONESIMULATOR}" "${ARCH_VAR_MAC_CATALYST}")
   echo -e "INFO: Building xcframeworks\n" 1>>"${BASEDIR}"/build.log 2>&1
 
-  for library in {0..46}; do
+  for library in {0..46} {59..60}; do
     if [[ ${ENABLED_LIBRARIES[$library]} -eq 1 ]]; then
       create_xcframework "${library}"
     fi
