@@ -2177,11 +2177,6 @@ static void show_packet(WriterContext *w, InputFile *ifile, AVPacket *pkt, int p
     print_time("dts_time",        pkt->dts, &st->time_base);
     print_duration_ts("duration",        pkt->duration);
     print_duration_time("duration_time", pkt->duration, &st->time_base);
-<<<<<<< HEAD
-    //print_duration_ts("convergence_duration", pkt->convergence_duration);
-    //print_duration_time("convergence_duration_time", pkt->convergence_duration, &st->time_base);
-=======
->>>>>>> upstream/main
     print_val("size",             pkt->size, unit_byte_str);
     if (pkt->pos != -1) print_fmt    ("pos", "%"PRId64, pkt->pos);
     else                print_str_opt("pos", "N/A");

@@ -2199,13 +2199,8 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
 
         if (av_opt_find(&cc, t->key, NULL, flags, AV_OPT_SEARCH_FAKE_OBJ) ||
             !codec ||
-<<<<<<< HEAD
-            (codec->priv_class &&
-             av_opt_find((void *)&codec->priv_class, t->key, NULL, flags,
-=======
             ((priv_class = codec->priv_class) &&
              av_opt_find(&priv_class, t->key, NULL, flags,
->>>>>>> upstream/main
                          AV_OPT_SEARCH_FAKE_OBJ)))
             av_dict_set(&ret, t->key, t->value, 0);
         else if (t->key[0] == prefix &&

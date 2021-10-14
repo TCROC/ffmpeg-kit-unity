@@ -497,16 +497,12 @@ static BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 void term_init(void)
 {
 #if defined __linux__
-<<<<<<< HEAD
-    struct sigaction action = {};
-=======
     #if defined  __aarch64__ || defined __amd64__ || defined __x86_64__
         struct sigaction action = {0};
     #else
         struct sigaction action = {{0}};
     #endif
 
->>>>>>> upstream/main
     action.sa_handler = sigterm_handler;
 
     /* block other interrupts while processing this one */

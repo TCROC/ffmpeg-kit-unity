@@ -1166,13 +1166,8 @@ int open_input_file(OptionsContext *o, const char *filename)
         /* because we set audio_channels based on both the "ac" and
          * "channel_layout" options, we need to check that the specified
          * demuxer actually has the "channels" option before setting it */
-<<<<<<< HEAD
-        if (file_iformat && file_iformat->priv_class &&
-            av_opt_find((void *)&file_iformat->priv_class, "channels", NULL, 0,
-=======
         if (file_iformat && (priv_class = file_iformat->priv_class) &&
             av_opt_find(&priv_class, "channels", NULL, 0,
->>>>>>> upstream/main
                         AV_OPT_SEARCH_FAKE_OBJ)) {
             av_dict_set_int(&o->g->format_opts, "channels", o->audio_channels[o->nb_audio_channels - 1].u.i, 0);
         }
@@ -1181,13 +1176,8 @@ int open_input_file(OptionsContext *o, const char *filename)
         const AVClass *priv_class;
         /* set the format-level framerate option;
          * this is important for video grabbers, e.g. x11 */
-<<<<<<< HEAD
-        if (file_iformat && file_iformat->priv_class &&
-            av_opt_find((void *)&file_iformat->priv_class, "framerate", NULL, 0,
-=======
         if (file_iformat && (priv_class = file_iformat->priv_class) &&
             av_opt_find(&priv_class, "framerate", NULL, 0,
->>>>>>> upstream/main
                         AV_OPT_SEARCH_FAKE_OBJ)) {
             av_dict_set(&o->g->format_opts, "framerate",
                         o->frame_rates[o->nb_frame_rates - 1].u.str, 0);
@@ -2352,16 +2342,10 @@ int open_output_file(OptionsContext *o, const char *filename)
                 int file_best_score = 0, file_best_idx = -1;
                 for (i = 0; i < ifile->nb_streams; i++) {
                 int score;
-<<<<<<< HEAD
-                ist = input_streams[i];
-                score = (int)(ist->st->codecpar->channels + 100000000*!!ist->st->nb_frames/*ist->st->codec_info_nb_frames*/
-                        + 5000000*!!(ist->st->disposition & AV_DISPOSITION_DEFAULT));
-=======
                     ist = input_streams[ifile->ist_index + i];
                 score = ist->st->codecpar->channels
                         + 100000000 * !!(ist->st->event_flags & AVSTREAM_EVENT_FLAG_NEW_PACKETS)
                         + 5000000*!!(ist->st->disposition & AV_DISPOSITION_DEFAULT);
->>>>>>> upstream/main
                 if (ist->user_set_discard == AVDISCARD_ALL)
                     continue;
                 if (ist->st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&
