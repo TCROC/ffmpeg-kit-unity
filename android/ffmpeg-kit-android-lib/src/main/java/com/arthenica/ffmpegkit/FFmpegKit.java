@@ -152,7 +152,7 @@ public class FFmpegKit {
     }
     
     public static FFmpegSession executeAsync(final String command) {
-        return executeAsync(parseArguments(command), new ExecuteCallback() {
+        return executeAsync(FFmpegKitConfig.parseArguments(command), new ExecuteCallback() {
             public void apply(final Session session) {
                 
             }
