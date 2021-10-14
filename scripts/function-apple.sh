@@ -14,20 +14,6 @@ get_ffmpeg_kit_version() {
   fi
 }
 
-# 1 - library index
-# 2 - output path
-copy_external_library_license() {
-  output_path_array=("$2")
-  for output_path in "${output_path_array[@]}"; do
-    $(cp $(get_external_library_license_path "$1") "${output_path}/LICENSE" 1>>"${BASEDIR}"/build.log 2>&1)
-    if [[ $? -ne 0 ]]; then
-      echo 1
-      return
-    fi
-  done
-  echo 0
-}
-
 get_external_library_version() {
   local library_version=$(grep Version "${BASEDIR}"/prebuilt/"$(get_build_directory)"/pkgconfig/"$1".pc 2>>"${BASEDIR}"/build.log | sed 's/Version://g;s/\ //g')
 
@@ -44,17 +30,17 @@ disable_ios_architecture_not_supported_on_detected_sdk_version() {
   case ${ARCH_NAME} in
   armv7 | armv7s | i386)
 
-    # SUPPORTED UNTIL IOS SDK 10
-    if [[ $2 == 11* ]] || [[ $2 == 12* ]] || [[ $2 == 13* ]] || [[ $2 == 14* ]]; then
-      local SUPPORTED=0
-    else
+    # SUPPORTED UNTIL IOS SDK 10.3.1
+    if [[ $(compare_versions "$2" "10.3.1") -le 0 ]]; then
       local SUPPORTED=1
+    else
+      local SUPPORTED=0
     fi
     ;;
   arm64e)
 
-    # INTRODUCED IN IOS SDK 10
-    if [[ $2 == 10* ]] || [[ $2 == 11* ]] || [[ $2 == 12* ]] || [[ $2 == 13* ]] || [[ $2 == 14* ]]; then
+    # INTRODUCED IN IOS SDK 10.1
+    if [[ $(compare_versions "$2" "10.1") -ge 1 ]]; then
       local SUPPORTED=1
     else
       local SUPPORTED=0
@@ -62,8 +48,8 @@ disable_ios_architecture_not_supported_on_detected_sdk_version() {
     ;;
   x86-64-mac-catalyst)
 
-    # INTRODUCED IN IOS SDK 13
-    if [[ $2 == 13* ]] || [[ $2 == 14* ]]; then
+    # INTRODUCED IN IOS SDK 13.0
+    if [[ $(compare_versions "$2" "13") -ge 1 ]]; then
       local SUPPORTED=1
     else
       local SUPPORTED=0
@@ -71,8 +57,8 @@ disable_ios_architecture_not_supported_on_detected_sdk_version() {
     ;;
   arm64-*)
 
-    # INTRODUCED IN IOS SDK 14
-    if [[ $2 == 14* ]]; then
+    # INTRODUCED IN IOS SDK 14.0
+    if [[ $(compare_versions "$2" "14") -ge 1 ]]; then
       local SUPPORTED=1
     else
       local SUPPORTED=0
@@ -101,8 +87,8 @@ disable_tvos_architecture_not_supported_on_detected_sdk_version() {
   case ${ARCH_NAME} in
   arm64-simulator)
 
-    # INTRODUCED IN TVOS SDK 14
-    if [[ $2 == 14* ]]; then
+    # INTRODUCED IN TVOS SDK 14.0
+    if [[ $(compare_versions "$2" "14") -ge 1 ]]; then
       local SUPPORTED=1
     else
       local SUPPORTED=0
@@ -131,8 +117,8 @@ disable_macos_architecture_not_supported_on_detected_sdk_version() {
   case ${ARCH_NAME} in
   arm64)
 
-    # INTRODUCED IN MACOS SDK 11
-    if [[ $2 == 11* ]]; then
+    # INTRODUCED IN MACOS SDK 11.0
+    if [[ $(compare_versions "$2" "11") -ge 1 ]]; then
       local SUPPORTED=1
     else
       local SUPPORTED=0
@@ -438,9 +424,9 @@ create_single_framework() {
 
   initialize_folder "${FRAMEWORK_PATH}"
 
-  local CAPITAL_CASE_LIBRARY_NAME=$(to_capital_case "${LIBRARY_NAME}")
+  local CAPITAL_CASE_FRAMEWORK_NAME=$(to_capital_case "${FRAMEWORK_NAME}")
 
-  build_info_plist "${FRAMEWORK_PATH}/Info.plist" "${LIBRARY_NAME}" "com.arthenica.ffmpegkit.${CAPITAL_CASE_LIBRARY_NAME}" "${LIBRARY_VERSION}" "${LIBRARY_VERSION}"
+  build_info_plist "${FRAMEWORK_PATH}/Info.plist" "${LIBRARY_NAME}" "com.arthenica.ffmpegkit.${CAPITAL_CASE_FRAMEWORK_NAME}" "${LIBRARY_VERSION}" "${LIBRARY_VERSION}"
 
   cp "${BASEDIR}/prebuilt/$(get_universal_library_directory "${ARCHITECTURE_VARIANT}")/${LIBRARY_NAME}/lib/${STATIC_LIBRARY_NAME}.a" "${FRAMEWORK_PATH}/${FRAMEWORK_NAME}" 1>>"${BASEDIR}/build.log" 2>&1
 
@@ -1250,7 +1236,7 @@ get_min_version_cflags() {
 get_min_sdk_version() {
   case ${ARCH} in
   *-mac-catalyst)
-    echo "13.0"
+    echo "${MAC_CATALYST_MIN_VERSION}"
     ;;
   *)
     case ${FFMPEG_KIT_BUILD_TYPE} in
