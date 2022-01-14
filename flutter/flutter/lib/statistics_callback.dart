@@ -19,5 +19,5 @@
 
 import 'statistics.dart';
 
-/// Callback function that receives statistics generated for "FFmpeg" sessions.dc
+/// Callback function that receives statistics generated for "FFmpeg" sessions.
 typedef StatisticsCallback = void Function(Statistics statistics);
