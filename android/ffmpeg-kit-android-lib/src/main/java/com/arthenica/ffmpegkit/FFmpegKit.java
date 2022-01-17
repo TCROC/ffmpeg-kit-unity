@@ -168,8 +168,8 @@ public class FFmpegKit {
     }
     
     public static FFmpegSession executeAsync(final String command) {
-        return executeAsync(FFmpegKitConfig.parseArguments(command), new ExecuteCallback() {
-            public void apply(final Session session) {
+        return executeAsync(command, new FFmpegSessionCompleteCallback() {
+            public void apply(FFmpegSession session) {
                 
             }
         });

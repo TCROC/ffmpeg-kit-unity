@@ -63,7 +63,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module, cpu-features)
 
-MY_SRC_FILES := ffmpegkit.c ffprobekit.c ffmpegkit_exception.c fftools_cmdutils.c fftools_ffmpeg.c fftools_ffprobe.c fftools_ffmpeg_opt.c fftools_ffmpeg_hw.c fftools_ffmpeg_filter.c
+MY_SRC_FILES := ffmpegkit.c ffprobekit.c ffmpegkit_exception.c fftools_cmdutils.c fftools_ffmpeg.c fftools_ffprobe.c fftools_ffmpeg_opt.c fftools_ffmpeg_hw.c fftools_ffmpeg_filter.c unitybuf.c
 
 ifeq ($(TARGET_PLATFORM),android-16)
     MY_SRC_FILES += android_lts_support.c
@@ -103,10 +103,10 @@ ifeq ($(MY_BUILD_GENERIC_FFMPEG_KIT), true)
     LOCAL_PATH := $(MY_LOCAL_PATH)/../ffmpeg-kit-android-lib/src/main/cpp
     LOCAL_ARM_MODE := $(MY_ARM_MODE)
     LOCAL_MODULE := ffmpegkit
-    LOCAL_SRC_FILES := $(MY_SRC_FILES)
+    LOCAL_SRC_FILES := $(MY_SRC_FILES) 
     LOCAL_CFLAGS := $(MY_CFLAGS)
     LOCAL_LDLIBS := $(MY_LDLIBS)
-    LOCAL_SHARED_LIBRARIES := libavfilter libavformat libavcodec libavutil libswresample libavdevice libswscale
+    LOCAL_SHARED_LIBRARIES := libavfilter libavformat libavcodec libavutil libswresample libavdevice libswscale # libunitybuf
     ifeq ($(APP_STL), c++_shared)
         LOCAL_SHARED_LIBRARIES += c++_shared # otherwise NDK will not add the library for packaging
     endif

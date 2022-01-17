@@ -423,6 +423,8 @@ else
   echo -e "\nINFO: Enabled custom ffmpeg-kit protocols\n" 1>>"${BASEDIR}"/build.log 2>&1
 fi
 
+cp -rf "${BASEDIR}"/unitybuf/* "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
+
 ###################################################################
 
 ./configure \
@@ -482,6 +484,7 @@ fi
   --disable-nvenc \
   --disable-vaapi \
   --disable-vdpau \
+  --enable-protocol="unitybuf" \
   ${CONFIGURE_POSTFIX} 1>>"${BASEDIR}"/build.log 2>&1
 
 if [[ $? -ne 0 ]]; then
