@@ -10,21 +10,23 @@ static size_t g_all_contexts_count = 0;
 static int g_is_lock = 0;
 static void lock() {
     while (g_is_lock != 0) {
-#ifdef _WIN32
-        SwitchToThread();
-#else
-        av_usleep(1000);
-#endif
+        av_usleep(1);
     }
     g_is_lock = 1;
 }
 static void unlock() {
     g_is_lock = 0;
-#ifdef _WIN32
-    SwitchToThread();
-#else
     av_usleep(0);
-#endif
+}
+
+static void local_lock(UnitybufStates *states) {
+    while (states->is_lock != 0) {
+        av_usleep(1);
+    }
+    states->is_lock = 1;
+}
+static void local_unlock(UnitybufStates *states) {
+    states->is_lock = 0;
 }
 
 DLL_EXPORT int unitybuf_open(URLContext *h, const char *uri, int flags) {
@@ -54,6 +56,8 @@ DLL_EXPORT int unitybuf_open(URLContext *h, const char *uri, int flags) {
     priv_data->clear_count = 0;
 
     priv_data->flags = flags;
+
+    priv_data->is_lock = 0;
 
     if (g_all_contexts_count <= 0) {
         g_all_contexts = (UnitybufStates **)av_malloc(sizeof(UnitybufStates *));
@@ -114,8 +118,8 @@ static int unitybuf_clear_inner(UnitybufStates *priv_data) {
 }
 
 DLL_EXPORT int unitybuf_close(URLContext *h) {
-    lock();
     UnitybufStates *priv_data = ((UnitybufContext *)h->priv_data)->states;
+    lock();
     int ret = 0;
     priv_data->clear_count++;
     if (priv_data->clear_count >= 2) {
@@ -126,28 +130,28 @@ DLL_EXPORT int unitybuf_close(URLContext *h) {
 }
 
 DLL_EXPORT int unitybuf_clear_dll(const char *uri) {
-    lock();
-
     UnitybufStates *priv_data = NULL;
 
+    lock();
     for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
         if (strcmp(g_all_contexts[loop]->uri, uri) == 0) {
             priv_data = g_all_contexts[loop];
             break;
         }
     }
+    unlock();
 
     if (priv_data == NULL) {
-        unlock();
         return -1;
     }
 
+    lock();
     priv_data->clear_count++;
     if (priv_data->clear_count >= 2) {
         unitybuf_clear_inner(priv_data);
     }
-
     unlock();
+
     return 0;
 }
 
@@ -211,27 +215,31 @@ static int unitybuf_write_inner(UnitybufStates *priv_data, const unsigned char *
 }
 
 DLL_EXPORT int unitybuf_write(URLContext *h, const unsigned char *buf, int size) {
-    /*
-    if (g_is_lock != 0) {
-        return AVERROR(EAGAIN);
-    }
-    */
-    lock();
-    int ret = unitybuf_write_inner(((UnitybufContext *)h->priv_data)->states, buf, size);
-    unlock();
+    UnitybufStates *priv_data = ((UnitybufContext *)h->priv_data)->states;
+    local_lock(priv_data);
+    int ret = unitybuf_write_inner(priv_data, buf, size);
+    local_unlock(priv_data);
     return ret;
 }
 
 DLL_EXPORT int unitybuf_write_dll(const char *uri, const unsigned char *buf, int size) {
     lock();
     int ret = AVERROR(EINVAL);
+    UnitybufStates *priv_data = NULL;
     for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
         if (strcmp(g_all_contexts[loop]->uri, uri) == 0) {
-            ret = unitybuf_write_inner(g_all_contexts[loop], buf, size);
+            priv_data = g_all_contexts[loop];
             break;
         }
     }
     unlock();
+
+    if (priv_data != NULL) {
+        local_lock(priv_data);
+        ret = unitybuf_write_inner(priv_data, buf, size);
+        local_unlock(priv_data);
+    }
+
     return ret;
 }
 
@@ -286,32 +294,31 @@ static int unitybuf_read_inner(UnitybufStates *priv_data, unsigned char *buf, in
 }
 
 DLL_EXPORT int unitybuf_read(URLContext *h, unsigned char *buf, int size) {
-    /*
-    if (g_is_lock != 0) {
-        return AVERROR(EAGAIN);
-    }
-    */
-    lock();
-    int ret = unitybuf_read_inner(((UnitybufContext *)h->priv_data)->states, buf, size);
-    unlock();
+    UnitybufStates *priv_data = ((UnitybufContext *)h->priv_data)->states;
+    local_lock(priv_data);
+    int ret = unitybuf_read_inner(priv_data, buf, size);
+    local_unlock(priv_data);
     return ret;
 }
 
 DLL_EXPORT int unitybuf_read_dll(const char *uri, unsigned char *buf, int size) {
-    /*
-    if (g_is_lock != 0) {
-        return 0;
-    }
-    */
     lock();
+    UnitybufStates *priv_data = NULL;
     int ret = 0;
     for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
         if (strcmp(g_all_contexts[loop]->uri, uri) == 0) {
-            ret = unitybuf_read_inner(g_all_contexts[loop], buf, size);
+            priv_data = g_all_contexts[loop];
             break;
         }
     }
     unlock();
+
+    if (priv_data != NULL) {
+        local_lock(priv_data);
+        ret = unitybuf_read_inner(priv_data, buf, size);
+        local_unlock(priv_data);
+    }
+
     return ret;
 }
 
