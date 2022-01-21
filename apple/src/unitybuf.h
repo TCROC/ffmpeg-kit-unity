@@ -38,9 +38,10 @@ extern DLL_EXPORT int unitybuf_close(URLContext *h);
 extern DLL_EXPORT int unitybuf_write(URLContext *h, const unsigned char *buf, int size);
 extern DLL_EXPORT int unitybuf_read(URLContext *h, unsigned char *buf, int size);
 
-extern DLL_EXPORT int unitybuf_write_dll(const char *uri, const unsigned char *buf, int size);
-extern DLL_EXPORT int unitybuf_read_dll(const char *uri, unsigned char *buf, int size);
-extern DLL_EXPORT int unitybuf_clear_dll(const char *uri);
-extern DLL_EXPORT int unitybuf_count_dll(const char *uri);
+extern DLL_EXPORT UnitybufStates *unitybuf_get_handle_dll(const char *uri);
+extern DLL_EXPORT int unitybuf_write_dll(UnitybufStates *handle, const unsigned char *buf, int size);
+extern DLL_EXPORT int unitybuf_read_dll(UnitybufStates *handle, unsigned char *buf, int size);
+extern DLL_EXPORT int unitybuf_clear_dll(UnitybufStates *handle);
+extern DLL_EXPORT int unitybuf_count_dll(UnitybufStates *handle);
 
 #endif

@@ -38,8 +38,9 @@ DLL_EXPORT int unitybuf_open(URLContext *h, const char *uri, int flags) {
     char *newUri = (char *)av_malloc(sizeof(char) * (strlen(uri) + 1));
     strcpy(newUri, uri);
     priv_data->uri = newUri;
-    av_strstart(uri, "unitybuf:", &uri);
-    char *str_num_ptr = strtok(uri, "/");
+    char *uri2 = (char *)av_malloc(sizeof(char) * (strlen(uri) + 1));
+    strcpy(uri2, uri + 9);
+    char *str_num_ptr = strtok(uri2, "/");
     priv_data->data_size = (size_t)atoi(str_num_ptr);
     if (priv_data->data_size <= 0) {
         unlock();
@@ -50,6 +51,7 @@ DLL_EXPORT int unitybuf_open(URLContext *h, const char *uri, int flags) {
     if (priv_data->max_count <= 0) {
         priv_data->max_count = INT_MAX - 1;
     }
+    av_freep(&uri2);
 
     priv_data->count = (size_t)0;
     priv_data->position = (size_t)0;
@@ -94,6 +96,21 @@ DLL_EXPORT int unitybuf_open(URLContext *h, const char *uri, int flags) {
     return 0;
 }
 
+DLL_EXPORT UnitybufStates *unitybuf_get_handle_dll(const char *uri) {
+    UnitybufStates *priv_data = NULL;
+
+    lock();
+    for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
+        if (strcmp(g_all_contexts[loop]->uri, uri) == 0) {
+            priv_data = g_all_contexts[loop];
+            break;
+        }
+    }
+    unlock();
+
+    return priv_data;
+}
+
 static int unitybuf_clear_inner(UnitybufStates *priv_data) {
     UnitybufStates **new_all_contexts = av_malloc(sizeof(UnitybufStates *) * (g_all_contexts_count - 1));
     size_t pos = 0;
@@ -135,18 +152,7 @@ DLL_EXPORT int unitybuf_close(URLContext *h) {
     return ret;
 }
 
-DLL_EXPORT int unitybuf_clear_dll(const char *uri) {
-    UnitybufStates *priv_data = NULL;
-
-    lock();
-    for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
-        if (strcmp(g_all_contexts[loop]->uri, uri) == 0) {
-            priv_data = g_all_contexts[loop];
-            break;
-        }
-    }
-    unlock();
-
+DLL_EXPORT int unitybuf_clear_dll(UnitybufStates *priv_data) {
     if (priv_data == NULL) {
         return -1;
     }
@@ -267,17 +273,8 @@ DLL_EXPORT int unitybuf_write(URLContext *h, const unsigned char *buf, int size)
     return ret;
 }
 
-DLL_EXPORT int unitybuf_write_dll(const char *uri, const unsigned char *buf, int size) {
-    lock();
+DLL_EXPORT int unitybuf_write_dll(UnitybufStates *priv_data, const unsigned char *buf, int size) {
     int ret = AVERROR(EINVAL);
-    UnitybufStates *priv_data = NULL;
-    for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
-        if (strcmp(g_all_contexts[loop]->uri, uri) == 0) {
-            priv_data = g_all_contexts[loop];
-            break;
-        }
-    }
-    unlock();
 
     if (priv_data != NULL) {
         local_lock(priv_data);
@@ -326,17 +323,8 @@ DLL_EXPORT int unitybuf_read(URLContext *h, unsigned char *buf, int size) {
     return ret;
 }
 
-DLL_EXPORT int unitybuf_read_dll(const char *uri, unsigned char *buf, int size) {
-    lock();
-    UnitybufStates *priv_data = NULL;
+DLL_EXPORT int unitybuf_read_dll(UnitybufStates *priv_data, unsigned char *buf, int size) {
     int ret = 0;
-    for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
-        if (strcmp(g_all_contexts[loop]->uri, uri) == 0) {
-            priv_data = g_all_contexts[loop];
-            break;
-        }
-    }
-    unlock();
 
     if (priv_data != NULL) {
         local_lock(priv_data);
@@ -347,15 +335,7 @@ DLL_EXPORT int unitybuf_read_dll(const char *uri, unsigned char *buf, int size) 
     return ret;
 }
 
-DLL_EXPORT int unitybuf_count_dll(const char *uri) {
-    lock();
-    int ret = 0;
-    for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
-        if (strcmp(g_all_contexts[loop]->uri, uri) == 0) {
-            ret = g_all_contexts[loop]->count - (g_all_contexts[loop]->position <= 0 ? 0 : 1);
-            break;
-        }
-    }
-    unlock();
+DLL_EXPORT int unitybuf_count_dll(UnitybufStates *handle) {
+    int ret = handle->count - (handle->position <= 0 ? 0 : 1);
     return ret;
 }
