@@ -26,6 +26,7 @@ typedef struct {
     size_t read_position;
     int clear_count;
     int is_lock;
+    size_t max_count;
 } UnitybufStates;
 
 typedef struct {

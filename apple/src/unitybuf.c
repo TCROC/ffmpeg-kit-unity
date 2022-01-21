@@ -39,10 +39,16 @@ DLL_EXPORT int unitybuf_open(URLContext *h, const char *uri, int flags) {
     strcpy(newUri, uri);
     priv_data->uri = newUri;
     av_strstart(uri, "unitybuf:", &uri);
-    priv_data->data_size = (size_t)atoi(uri);
+    char *str_num_ptr = strtok(uri, "/");
+    priv_data->data_size = (size_t)atoi(str_num_ptr);
     if (priv_data->data_size <= 0) {
         unlock();
         return AVERROR(EINVAL);
+    }
+    str_num_ptr = strtok(NULL, "/");
+    priv_data->max_count = (size_t)atoi(str_num_ptr);
+    if (priv_data->max_count <= 0) {
+        priv_data->max_count = INT_MAX - 1;
     }
 
     priv_data->count = (size_t)0;
@@ -155,8 +161,47 @@ DLL_EXPORT int unitybuf_clear_dll(const char *uri) {
     return 0;
 }
 
+static int remove_datas(UnitybufStates *priv_data, int del_count) {
+    uint8_t **new_empty = av_malloc(sizeof(uint8_t *) * (priv_data->empty_count + del_count));
+    if (new_empty == NULL) {
+        return AVERROR(ENOMEM);
+    }
+    for (size_t loop = 0; loop < priv_data->empty_count; loop++) {
+        new_empty[loop] = priv_data->empty_datas[loop];
+    }
+    for (size_t loop = 0; loop < del_count; loop++) {
+        new_empty[priv_data->empty_count + loop] = priv_data->datas[loop];
+    }
+    if (priv_data->empty_datas != NULL) {
+        av_freep(&priv_data->empty_datas);
+    }
+    priv_data->empty_datas = new_empty;
+    priv_data->empty_count += del_count;
+
+    uint8_t **new_datas = av_malloc(sizeof(uint8_t *) * (priv_data->count - del_count));
+    if (new_datas == NULL) {
+        return AVERROR(ENOMEM);
+    }
+    for (size_t loop = 0; loop < priv_data->count - del_count; loop++) {
+        new_datas[loop] = priv_data->datas[loop + del_count];
+    }
+    av_freep(&priv_data->datas);
+    priv_data->datas = new_datas;
+    priv_data->count -= del_count;
+
+    return 0;
+}
+
 static int unitybuf_write_inner(UnitybufStates *priv_data, const unsigned char *buf, int size) {
     int ret = 0;
+
+    int del_count = priv_data->count - priv_data->max_count;
+    if (del_count > 0) {
+        int remove_result = remove_datas(priv_data, del_count);
+        if (remove_result < 0) {
+            return remove_result;
+        }
+    }
 
     while (size > 0) {
         uint8_t *new_data;
@@ -248,30 +293,10 @@ static int unitybuf_read_inner(UnitybufStates *priv_data, unsigned char *buf, in
     while (size >= (priv_data->data_size - priv_data->read_position) && priv_data->count > (priv_data->position <= 0 ? 0 : 1)) {
         memcpy(buf, priv_data->datas[0] + priv_data->read_position, priv_data->data_size - priv_data->read_position);
         
-        uint8_t **new_empty = av_malloc(sizeof(uint8_t *) * (priv_data->empty_count + 1));
-        if (new_empty == NULL) {
-            return AVERROR_EOF;
+        int remove_result = remove_datas(priv_data, 1);
+        if (remove_result < 0) {
+            return remove_result;
         }
-        for (size_t loop = 0; loop < priv_data->empty_count; loop++) {
-            new_empty[loop] = priv_data->empty_datas[loop];
-        }
-        new_empty[priv_data->empty_count] = priv_data->datas[0];
-        if (priv_data->empty_datas != NULL) {
-            av_freep(&priv_data->empty_datas);
-        }
-        priv_data->empty_datas = new_empty;
-        priv_data->empty_count++;
-
-        uint8_t **new_datas = av_malloc(sizeof(uint8_t *) * (priv_data->count - 1));
-        if (new_datas == NULL) {
-            return AVERROR_EOF;
-        }
-        for (size_t loop = 0; loop < priv_data->count - 1; loop++) {
-            new_datas[loop] = priv_data->datas[loop + 1];
-        }
-        av_freep(&priv_data->datas);
-        priv_data->datas = new_datas;
-        priv_data->count--;
 
         size -= priv_data->data_size - priv_data->read_position;
         buf += priv_data->data_size - priv_data->read_position;
