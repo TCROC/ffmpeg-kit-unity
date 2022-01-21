@@ -1,6 +1,6 @@
 #! /bin/sh
-# Generated automatically by config.status (ffmpeg-kit) 4.5
-# Libtool was configured on host MiRA.local:
+# Generated automatically by config.status (ffmpeg-kit) 4.5.1
+# Libtool was configured on host satouharuhikonoMacBook-ea.local:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 
 # Provide generalized library-building support services.
@@ -72,8 +72,8 @@ host_os=darwin
 
 # The build system.
 build_alias=
-build=aarch64-apple-darwin20.6.0
-build_os=darwin20.6.0
+build=x86_64-apple-darwin21.2.0
+build_os=darwin21.2.0
 
 # A sed program that does not truncate output.
 SED="/usr/bin/sed"
@@ -165,7 +165,7 @@ lock_old_archive_extraction=yes
 LTCC="clang"
 
 # LTCC compiler flags.
-LTCFLAGS="-arch arm64 -target arm64-apple-ios12.1 -march=armv8-a+crc+crypto -mcpu=generic -DFFMPEG_KIT_ARM64 -std=c99 -Wno-unused-function -Wall -Wno-deprecated-declarations -Wno-pointer-sign -Wno-switch -Wno-unused-result -Wno-unused-variable -DPIC -fobjc-arc -fstrict-aliasing -fembed-bitcode -DIOS -DFFMPEG_KIT_BUILD_DATE=20211024 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.0.sdk -Oz -Wno-ignored-optimization-argument -miphoneos-version-min=12.1 -I/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.0.sdk/usr/include -I/Users/taner/Projects/ffmpeg-kit/prebuilt/apple-ios-arm64/ffmpeg/include"
+LTCFLAGS="-arch arm64 -target arm64-apple-ios12.1 -march=armv8-a+crc+crypto -mcpu=generic -DFFMPEG_KIT_ARM64 -std=c99 -Wno-unused-function -Wall -Wno-deprecated-declarations -Wno-pointer-sign -Wno-switch -Wno-unused-result -Wno-unused-variable -DPIC -fobjc-arc -fstrict-aliasing -fembed-bitcode -DIOS -DFFMPEG_KIT_BUILD_DATE=20220121 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.2.sdk -Oz -Wno-ignored-optimization-argument -miphoneos-version-min=12.1 -I/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.2.sdk/usr/include -I/Users/satoharu/Documents/Unity/FfmpegUnity/OtherProjects/ffmpeg-kit/prebuilt/apple-ios-arm64/ffmpeg/include"
 
 # Take the output of nm and produce a listing of raw symbols and C names.
 global_symbol_pipe="sed -n -e 's/^.*[	 ]\\([BCDEGRST][BCDEGRST]*\\)[	 ][	 ]*_\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 _\\2 \\2/p' | sed '/ __gnu_lto/d'"
@@ -189,7 +189,7 @@ nm_interface="BSD nm"
 nm_file_list_spec="@"
 
 # The root where to search for dependent libraries,and where our libraries should be installed.
-lt_sysroot=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.0.sdk
+lt_sysroot=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.2.sdk
 
 # Command to truncate a binary pipe.
 lt_truncate_bin="/bin/dd bs=4096 count=1"
@@ -357,19 +357,19 @@ old_archive_from_new_cmds=""
 old_archive_from_expsyms_cmds=""
 
 # Commands used to build a shared archive.
-archive_cmds="\$CC -dynamiclib \$allow_undefined_flag -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name \$rpath/\$soname \$verstring \$single_module"
-archive_expsym_cmds="sed 's|^|_|' < \$export_symbols > \$output_objdir/\$libname-symbols.expsym~\$CC -dynamiclib \$allow_undefined_flag -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name \$rpath/\$soname \$verstring \$single_module \$wl-exported_symbols_list,\$output_objdir/\$libname-symbols.expsym"
+archive_cmds="\$CC -dynamiclib \$allow_undefined_flag -target arm64-apple-ios12.1 -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name \@rpath/ffmpegkit.framework/ffmpegkit \$verstring \$single_module"
+archive_expsym_cmds="sed 's|^|_|' < \$export_symbols > \$output_objdir/\$libname-symbols.expsym~\$CC -dynamiclib \$allow_undefined_flag -target arm64-apple-ios12.1 -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name \@rpath/ffmpegkit.framework/ffmpegkit \$verstring \$single_module \$wl-exported_symbols_list,\$output_objdir/\$libname-symbols.expsym"
 
 # Commands used to build a loadable module if different from building
 # a shared archive.
-module_cmds="\$CC \$allow_undefined_flag -o \$lib -bundle \$libobjs \$deplibs \$compiler_flags"
-module_expsym_cmds="sed -e 's|^|_|' < \$export_symbols > \$output_objdir/\$libname-symbols.expsym~\$CC \$allow_undefined_flag -o \$lib -bundle \$libobjs \$deplibs \$compiler_flags \$wl-exported_symbols_list,\$output_objdir/\$libname-symbols.expsym"
+module_cmds="\$CC \$allow_undefined_flag -target arm64-apple-ios12.1 -o \$lib -bundle \$libobjs \$deplibs \$compiler_flags"
+module_expsym_cmds="sed -e 's|^|_|' < \$export_symbols > \$output_objdir/\$libname-symbols.expsym~\$CC \$allow_undefined_flag -target arm64-apple-ios12.1 -o \$lib -bundle \$libobjs \$deplibs \$compiler_flags \$wl-exported_symbols_list,\$output_objdir/\$libname-symbols.expsym"
 
 # Whether we are building with GNU ld or not.
 with_gnu_ld="no"
 
 # Flag that allows shared libraries with undefined symbols to be built.
-allow_undefined_flag="\$wl-undefined \${wl}dynamic_lookup"
+allow_undefined_flag=""
 
 # Flag that enforces no undefined symbols.
 no_undefined_flag=""

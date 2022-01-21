@@ -26,7 +26,8 @@ libffmpegkit_la_SOURCES = \
     fftools_ffmpeg_filter.c \
     fftools_ffmpeg_hw.c \
     fftools_ffmpeg_opt.c \
-    fftools_ffprobe.c
+    fftools_ffprobe.c \
+    unitybuf.c
 
 if FFMPEGKIT_VIDEOTOOLBOX
     libffmpegkit_la_SOURCES += fftools_ffmpeg_videotoolbox.c
@@ -61,7 +62,8 @@ include_HEADERS = \
     StreamInformation.h \
     ffmpegkit_exception.h \
     fftools_cmdutils.h \
-    fftools_ffmpeg.h
+    fftools_ffmpeg.h \
+    unitybuf.h
 
 libffmpegkit_la_CFLAGS = $(CFLAGS)
 libffmpegkit_la_OBJCFLAGS = $(CFLAGS)

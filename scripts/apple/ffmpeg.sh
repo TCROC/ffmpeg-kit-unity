@@ -496,6 +496,11 @@ ${SED_INLINE} "s/\$version/$FFMPEG_VERSION/g" "${BASEDIR}"/src/"${LIB_NAME}"/ffb
 
 ###################################################################
 
+cp -f "${BASEDIR}"/unitybuf_ios/unitybuf_wrapper.c "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
+cp -f "${BASEDIR}"/unitybuf_ios/unitybuf_wrapper.h "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
+cp -f "${BASEDIR}"/unitybuf_ios/Makefile "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
+sed -i -e "s/extern const URLProtocol ff_libzmq_protocol\;/extern const URLProtocol ff_libzmq_protocol\;\nextern const URLProtocol ff_unitybuf_protocol\;/g" "${BASEDIR}"/src/ffmpeg/libavformat/protocols.c 1>>"${BASEDIR}"/build.log 2>&1
+
 ./configure \
   --cross-prefix="${HOST}-" \
   --sysroot="${SDK_PATH}" \
@@ -553,6 +558,7 @@ ${SED_INLINE} "s/\$version/$FFMPEG_VERSION/g" "${BASEDIR}"/src/"${LIB_NAME}"/ffb
   --disable-nvenc \
   --disable-vaapi \
   --disable-vdpau \
+  --enable-protocol="unitybuf" \
   ${CONFIGURE_POSTFIX} 1>>"${BASEDIR}"/build.log 2>&1
 
 if [[ $? -ne 0 ]]; then
