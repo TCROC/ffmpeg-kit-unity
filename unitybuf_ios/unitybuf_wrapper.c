@@ -16,7 +16,7 @@ static int unitybuf_open(URLContext *h, const char *uri, int flags) {
     }
 
     if (g_dl_handle == NULL) {
-        g_dl_handle = dlopen("./ffmpegkit.framework/ffmpegkit", RTLD_LAZY);
+        g_dl_handle = dlopen("ffmpegkit.framework/ffmpegkit", RTLD_LAZY | RTLD_NODELETE | RTLD_FIRST);
         if (g_dl_handle == NULL) {
             return -1;
         }

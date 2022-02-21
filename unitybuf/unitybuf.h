@@ -12,20 +12,20 @@
 #define DLL_EXPORT 
 #endif
 
-#include "url.h"
+#include <stdatomic.h>
+#include "libavformat/url.h"
 
 typedef struct {
     uint8_t **datas;
     size_t data_size;
+    size_t *data_lengths;
     size_t count;
-    size_t position;
-    uint8_t **empty_datas;
-    size_t empty_count;
     const char *uri;
     int flags;
     size_t read_position;
     int clear_count;
-    int is_lock;
+    atomic_int is_lock;
+    size_t max_count;
 } UnitybufStates;
 
 typedef struct {
@@ -37,18 +37,10 @@ extern DLL_EXPORT int unitybuf_close(URLContext *h);
 extern DLL_EXPORT int unitybuf_write(URLContext *h, const unsigned char *buf, int size);
 extern DLL_EXPORT int unitybuf_read(URLContext *h, unsigned char *buf, int size);
 
-extern DLL_EXPORT int unitybuf_write_dll(const char *uri, const unsigned char *buf, int size);
-extern DLL_EXPORT int unitybuf_read_dll(const char *uri, unsigned char *buf, int size);
-extern DLL_EXPORT int unitybuf_clear_dll(const char *uri);
-extern DLL_EXPORT int unitybuf_count_dll(const char *uri);
-
-const URLProtocol ff_unitybuf_protocol = {
-    .name           = "unitybuf",
-    .url_open       = unitybuf_open,
-    .url_close      = unitybuf_close,
-    .url_write      = unitybuf_write,
-    .url_read       = unitybuf_read,
-    .priv_data_size = sizeof(UnitybufContext),
-};
+extern DLL_EXPORT UnitybufStates *unitybuf_get_handle_dll(const char *uri);
+extern DLL_EXPORT int unitybuf_write_dll(UnitybufStates *handle, const unsigned char *buf, int size);
+extern DLL_EXPORT int unitybuf_read_dll(UnitybufStates *handle, unsigned char *buf, int size);
+extern DLL_EXPORT int unitybuf_clear_dll(UnitybufStates *handle);
+extern DLL_EXPORT int unitybuf_count_dll(UnitybufStates *handle);
 
 #endif
