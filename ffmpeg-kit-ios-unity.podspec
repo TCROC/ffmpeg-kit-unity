@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
     s.homepage          = "https://github.com/NON906/ffmpeg-kit"
 
     s.author            = { "NON906" => "mumeigames@gmail.com" }
-    s.license           = { :type => "LGPL-3.0", :file => "ffmpegkit.xcframework/LICENSE" }
+    s.license           = { :type => "LGPL-3.0", :file => "ffmpegkit.xcframework/ios-arm64/ffmpegkit.framework/LICENSE" }
 
     s.platform          = :ios
     s.requires_arc      = true
