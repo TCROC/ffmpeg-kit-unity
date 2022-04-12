@@ -1,0 +1,22 @@
+Pod::Spec.new do |s|  
+    s.name              = "ffmpeg-kit-ios-unity"
+    s.version           = "v1.10-dev"
+    s.summary           = "FFmpeg Kit iOS Unity Framework"
+    s.description       = "Ffmpeg for Unity"
+
+    s.homepage          = "https://github.com/NON906/ffmpeg-kit"
+
+    s.author            = { "NON906" => "mumeigames@gmail.com" }
+    s.license           = { :type => "LGPL-3.0", :file => "ffmpegkit.framework/LICENSE" }
+
+    s.platform          = :ios
+    s.requires_arc      = true
+    s.libraries         = 'z', 'bz2', 'c++', 'iconv'
+
+    s.source            = { :http => "https://github.com/NON906/ffmpeg-kit/releases/download/v1.10-dev/ffmpeg-kit-unity-v1.10-dev-ios-xcframework.zip" }
+
+    s.ios.deployment_target = '12.1'
+    s.ios.frameworks    = 'AudioToolbox','AVFoundation','CoreMedia','VideoToolbox'
+    s.ios.vendored_frameworks = 'ffmpegkit.framework', 'libavcodec.framework', 'libavdevice.framework', 'libavfilter.framework', 'libavformat.framework', 'libavutil.framework', 'libswresample.framework', 'libswscale.framework'
+
+end  
