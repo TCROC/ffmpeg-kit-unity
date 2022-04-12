@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
     s.homepage          = "https://github.com/NON906/ffmpeg-kit"
 
     s.author            = { "NON906" => "mumeigames@gmail.com" }
-    s.license           = { :type => "LGPL-3.0", :file => "ffmpegkit.framework/LICENSE" }
+    s.license           = { :type => "LGPL-3.0", :file => "ffmpegkit.xcframework/LICENSE" }
 
     s.platform          = :ios
     s.requires_arc      = true
@@ -17,6 +17,6 @@ Pod::Spec.new do |s|
 
     s.ios.deployment_target = '12.1'
     s.ios.frameworks    = 'AudioToolbox','AVFoundation','CoreMedia','VideoToolbox'
-    s.ios.vendored_frameworks = 'ffmpegkit.framework', 'libavcodec.framework', 'libavdevice.framework', 'libavfilter.framework', 'libavformat.framework', 'libavutil.framework', 'libswresample.framework', 'libswscale.framework'
+    s.ios.vendored_frameworks = 'ffmpegkit.xcframework', 'libavcodec.xcframework', 'libavdevice.xcframework', 'libavfilter.xcframework', 'libavformat.xcframework', 'libavutil.xcframework', 'libswresample.xcframework', 'libswscale.xcframework'
 
 end  
