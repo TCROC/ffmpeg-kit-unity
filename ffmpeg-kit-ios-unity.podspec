@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|  
     s.name              = "ffmpeg-kit-ios-unity"
-    s.version           = "v1.10-dev"
+    s.version           = "1.10"
     s.summary           = "FFmpeg Kit iOS Unity Framework"
     s.description       = "Ffmpeg for Unity"
 
