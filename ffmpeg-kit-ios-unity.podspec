@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
     s.requires_arc      = true
     s.libraries         = 'z', 'bz2', 'c++', 'iconv'
 
-    s.source            = { :http => "https://github.com/tanersener/ffmpeg-kit/releases/download/v1.10-dev/ffmpeg-kit-unity-1.10-ios-xcframework.zip" }
+    s.source            = { :http => "https://github.com/NON906/ffmpeg-kit/releases/download/v1.10-dev/ffmpeg-kit-unity-1.10-ios-xcframework.zip" }
 
     s.ios.deployment_target = '12.1'
     s.ios.frameworks    = 'AudioToolbox','AVFoundation','CoreMedia','VideoToolbox'
