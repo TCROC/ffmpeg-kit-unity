@@ -35,7 +35,7 @@ static int unitybuf_open(URLContext *h, const char *uri, int flags) {
 
     if (g_dl_handle == NULL) {
         reset_symbols();
-        g_dl_handle = dlopen("ffmpegkit.framework/ffmpegkit", RTLD_LAZY | RTLD_NODELETE | RTLD_FIRST);
+        g_dl_handle = dlopen("@rpath/ffmpegkit.framework/ffmpegkit", RTLD_LAZY | RTLD_NODELETE | RTLD_FIRST);
         if (g_dl_handle == NULL) {
             unlock();
             return -1;
@@ -68,7 +68,7 @@ static int unitybuf_close(URLContext *h) {
 
     if (g_dl_handle == NULL) {
         reset_symbols();
-        g_dl_handle = dlopen("ffmpegkit.framework/ffmpegkit", RTLD_LAZY | RTLD_NODELETE | RTLD_FIRST);
+        g_dl_handle = dlopen("@rpath/ffmpegkit.framework/ffmpegkit", RTLD_LAZY | RTLD_NODELETE | RTLD_FIRST);
         if (g_dl_handle == NULL) {
             unlock();
             return -1;
@@ -108,7 +108,7 @@ static int unitybuf_write(URLContext *h, const unsigned char *buf, int size) {
 
     if (g_dl_handle == NULL) {
         reset_symbols();
-        g_dl_handle = dlopen("ffmpegkit.framework/ffmpegkit", RTLD_LAZY | RTLD_NODELETE | RTLD_FIRST);
+        g_dl_handle = dlopen("@rpath/ffmpegkit.framework/ffmpegkit", RTLD_LAZY | RTLD_NODELETE | RTLD_FIRST);
         if (g_dl_handle == NULL) {
             unlock();
             return -1;
@@ -139,7 +139,7 @@ static int unitybuf_read(URLContext *h, unsigned char *buf, int size) {
 
     if (g_dl_handle == NULL) {
         reset_symbols();
-        g_dl_handle = dlopen("ffmpegkit.framework/ffmpegkit", RTLD_LAZY | RTLD_NODELETE | RTLD_FIRST);
+        g_dl_handle = dlopen("@rpath/ffmpegkit.framework/ffmpegkit", RTLD_LAZY | RTLD_NODELETE | RTLD_FIRST);
         if (g_dl_handle == NULL) {
             unlock();
             return -1;
