@@ -4,7 +4,7 @@
 #include "libavutil/time.h"
 #include "unitybuf.h"
 
-static UnitybufStates **g_all_contexts;
+static UnitybufStates **g_all_contexts = NULL;
 static size_t g_all_contexts_count = 0;
 
 static atomic_flag g_is_lock = ATOMIC_FLAG_INIT;
@@ -12,6 +12,12 @@ static void lock() {
     while (atomic_flag_test_and_set(&g_is_lock)) {
         av_usleep(1);
     }
+}
+static int try_lock() {
+    if (atomic_flag_test_and_set(&g_is_lock)) {
+        return AVERROR(EAGAIN);
+    }
+    return 0;
 }
 static void unlock() {
     atomic_flag_clear(&g_is_lock);
@@ -41,7 +47,7 @@ static UnitybufStates *unitybuf_get_handle(const char *uri) {
     UnitybufStates *priv_data = NULL;
 
     for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
-        if (strcmp(g_all_contexts[loop]->uri, uri) == 0) {
+        if (g_all_contexts[loop] != NULL && g_all_contexts[loop]->uri != NULL && strcmp(g_all_contexts[loop]->uri, uri) == 0) {
             priv_data = g_all_contexts[loop];
             break;
         }
@@ -51,15 +57,16 @@ static UnitybufStates *unitybuf_get_handle(const char *uri) {
 }
 
 DLL_EXPORT UnitybufStates *unitybuf_get_handle_dll(const char *uri) {
-    UnitybufStates *priv_data = NULL;
-
-    /*
-    if (g_is_lock != 0) {
+    if (uri == NULL) {
         return NULL;
     }
-    */
 
-    lock();
+    UnitybufStates *priv_data = NULL;
+
+    //lock();
+    if (try_lock() != 0) {
+        return NULL;
+    }
     priv_data = unitybuf_get_handle(uri);
     unlock();
 
@@ -67,83 +74,100 @@ DLL_EXPORT UnitybufStates *unitybuf_get_handle_dll(const char *uri) {
 }
 
 DLL_EXPORT int unitybuf_open(URLContext *h, const char *uri, int flags) {
+    int loopFlag = 0;
+    UnitybufStates *priv_data = NULL;
+
+    do {
+        loopFlag = 0;
+
+        ((UnitybufContext *)h->priv_data)->states = (UnitybufStates *)av_mallocz(sizeof(UnitybufStates));
+        if (((UnitybufContext *)h->priv_data)->states == NULL) {
+            av_usleep(1);
+            loopFlag = 1;
+            continue;
+        }
+        priv_data = ((UnitybufContext *)h->priv_data)->states;
+
+        char *newUri = (char *)av_mallocz(sizeof(char) * (strlen(uri) + 1));
+        if (newUri == NULL) {
+            freep((void**)&priv_data);
+            av_usleep(1);
+            loopFlag = 1;
+            continue;
+        }
+        strcpy(newUri, uri);
+        priv_data->uri = newUri;
+        char *uri2 = (char *)av_mallocz(sizeof(char) * (strlen(uri) + 1));
+        if (uri2 == NULL) {
+            freep((void**)&priv_data->uri);
+            freep((void**)&priv_data);
+            av_usleep(1);
+            loopFlag = 1;
+            continue;
+        }
+        strcpy(uri2, uri + 9);
+        char *str_num_ptr = strtok(uri2, "/");
+        priv_data->data_size = (size_t)atoi(str_num_ptr);
+        str_num_ptr = strtok(NULL, "/");
+        priv_data->max_count = (size_t)atoi(str_num_ptr);
+        if (priv_data->max_count <= 0) {
+            priv_data->max_count = INT_MAX - 1;
+        }
+        freep((void**)&uri2);
+
+        priv_data->count = (size_t)0;
+        priv_data->read_position = (size_t)0;
+
+        priv_data->datas = NULL;
+        priv_data->data_lengths = NULL;
+
+        priv_data->clear_count = 0;
+
+        priv_data->flags = flags;
+
+        atomic_flag newFlag = ATOMIC_FLAG_INIT;
+        priv_data->is_lock = newFlag;
+    } while (loopFlag != 0);
+
     lock();
 
-    /*
-    UnitybufStates *old_handle = unitybuf_get_handle(uri);
-    if (old_handle != NULL) {
-        ((UnitybufContext *)h->priv_data)->states = old_handle;
-        ((UnitybufContext *)h->priv_data)->states->clear_count--;
-        unlock();
-        return 0;
-    }
-    */
-
-    ((UnitybufContext *)h->priv_data)->states = (UnitybufStates *)av_mallocz(sizeof(UnitybufStates));
-    if (((UnitybufContext *)h->priv_data)->states == NULL) {
-        unlock();
-        return AVERROR(ENOMEM);
-    }
-    UnitybufStates *priv_data = ((UnitybufContext *)h->priv_data)->states;
-
-    char *newUri = (char *)av_mallocz(sizeof(char) * (strlen(uri) + 1));
-    if (newUri == NULL) {
-        unlock();
-        return AVERROR(ENOMEM);
-    }
-    strcpy(newUri, uri);
-    priv_data->uri = newUri;
-    char *uri2 = (char *)av_mallocz(sizeof(char) * (strlen(uri) + 1));
-    if (uri2 == NULL) {
-        unlock();
-        return AVERROR(ENOMEM);
-    }
-    strcpy(uri2, uri + 9);
-    char *str_num_ptr = strtok(uri2, "/");
-    priv_data->data_size = (size_t)atoi(str_num_ptr);
-    str_num_ptr = strtok(NULL, "/");
-    priv_data->max_count = (size_t)atoi(str_num_ptr);
-    if (priv_data->max_count <= 0) {
-        priv_data->max_count = INT_MAX - 1;
-    }
-    freep((void**)&uri2);
-
-    priv_data->count = (size_t)0;
-    priv_data->read_position = (size_t)0;
-
-    priv_data->datas = NULL;
-    priv_data->data_lengths = NULL;
-
-    priv_data->clear_count = 0;
-
-    priv_data->flags = flags;
-
-    atomic_flag newFlag = ATOMIC_FLAG_INIT;
-    priv_data->is_lock = newFlag;
-
-    if (g_all_contexts_count <= 0) {
-        g_all_contexts = (UnitybufStates **)av_mallocz(sizeof(UnitybufStates *));
-        if (g_all_contexts == NULL) {
-            unlock();
-            return AVERROR(ENOMEM);
+    do {
+        loopFlag = 0;
+        if (g_all_contexts_count <= 0) {
+            if (g_all_contexts != NULL) {
+                freep((void**)&g_all_contexts);
+            }
+            g_all_contexts = (UnitybufStates **)av_mallocz(sizeof(UnitybufStates *));
+            if (g_all_contexts == NULL) {
+                unlock();
+                lock();
+                loopFlag = 1;
+                continue;
+            }
+            g_all_contexts[0] = priv_data;
+            g_all_contexts_count = 1;
         }
-        g_all_contexts[0] = priv_data;
-        g_all_contexts_count = 1;
-    }
-    else {
-        UnitybufStates **newContexts = (UnitybufStates **)av_mallocz(sizeof(UnitybufStates *) * (g_all_contexts_count + 1));
-        if (newContexts == NULL) {
-            unlock();
-            return AVERROR(ENOMEM);
+        else {
+            UnitybufStates **newContexts = (UnitybufStates **)av_mallocz(sizeof(UnitybufStates *) * (g_all_contexts_count + 1));
+            if (newContexts == NULL) {
+                unlock();
+                lock();
+                loopFlag = 1;
+                continue;
+            }
+            size_t pos = 0;
+            for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
+                if (g_all_contexts[loop] != NULL) {
+                    newContexts[pos] = g_all_contexts[loop];
+                    pos++;
+                }
+            }
+            newContexts[pos] = priv_data;
+            freep((void**)&g_all_contexts);
+            g_all_contexts = newContexts;
+            g_all_contexts_count = pos + 1;
         }
-        for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
-            newContexts[loop] = g_all_contexts[loop];
-        }
-        newContexts[g_all_contexts_count] = priv_data;
-        freep((void**)&g_all_contexts);
-        g_all_contexts = newContexts;
-        g_all_contexts_count++;
-    }
+    } while (loopFlag != 0);
 
     unlock();
 
@@ -151,24 +175,14 @@ DLL_EXPORT int unitybuf_open(URLContext *h, const char *uri, int flags) {
 }
 
 static int unitybuf_clear_inner(UnitybufStates *priv_data) {
-    if (g_all_contexts_count - 1 > 0) {
-        UnitybufStates **new_all_contexts = av_mallocz(sizeof(UnitybufStates *) * (g_all_contexts_count - 1));
-        if (new_all_contexts == NULL) {
-            return AVERROR(ENOMEM);
-        }
-        size_t pos = 0;
-        for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
-            if (g_all_contexts[loop] != priv_data) {
-                new_all_contexts[pos] = g_all_contexts[loop];
-                pos++;
-            }
-        }
-        g_all_contexts = new_all_contexts;
-        g_all_contexts_count--;
+    if (priv_data == NULL) {
+        return 0;
     }
-    else {
-        g_all_contexts = NULL;
-        g_all_contexts_count = 0;
+
+    for (size_t loop = 0; loop < g_all_contexts_count; loop++) {
+        if (g_all_contexts[loop] == priv_data) {
+            g_all_contexts[loop] = NULL;
+        }
     }
 
     if (priv_data->datas != NULL) {
@@ -192,6 +206,10 @@ static int unitybuf_clear_inner(UnitybufStates *priv_data) {
 }
 
 DLL_EXPORT int unitybuf_close(URLContext *h) {
+    if (h == NULL || h->priv_data == NULL || ((UnitybufContext *)h->priv_data)->states == NULL) {
+        return AVERROR(EINVAL);
+    }
+
     UnitybufStates *priv_data = ((UnitybufContext *)h->priv_data)->states;
     
     int ret = 0;
@@ -206,7 +224,7 @@ DLL_EXPORT int unitybuf_close(URLContext *h) {
 
 DLL_EXPORT int unitybuf_clear_dll(UnitybufStates *priv_data) {
     if (priv_data == NULL) {
-        return -1;
+        return AVERROR(EINVAL);
     }
 
     priv_data->clear_count++;
@@ -220,6 +238,10 @@ DLL_EXPORT int unitybuf_clear_dll(UnitybufStates *priv_data) {
 }
 
 static int remove_datas(UnitybufStates *priv_data, int del_count) {
+    if (priv_data == NULL) {
+        return AVERROR(EINVAL);
+    }
+
     if (priv_data->count - del_count <= 0) {
         if (priv_data->datas != NULL) {
             for (size_t loop = 0; loop < priv_data->count; loop++) {
@@ -266,6 +288,10 @@ static int remove_datas(UnitybufStates *priv_data, int del_count) {
 }
 
 static int unitybuf_count(UnitybufStates *handle) {
+    if (handle == NULL || handle->data_lengths == NULL) {
+        return 0;
+    }
+
     if (handle->data_size <= 0) {
         int ret = handle->count;
         return ret;
@@ -284,9 +310,10 @@ static int unitybuf_count(UnitybufStates *handle) {
 }
 
 static int unitybuf_write_inner(UnitybufStates *priv_data, const unsigned char *buf, int size) {
-    if (priv_data->clear_count > 0 && unitybuf_count(priv_data) <= 0) {
-        return AVERROR_EOF;
+    if (priv_data == NULL) {
+        return AVERROR(EINVAL);
     }
+
     if (size <= 0) {
         return 0;
     }
@@ -333,6 +360,10 @@ static int unitybuf_write_inner(UnitybufStates *priv_data, const unsigned char *
 }
 
 DLL_EXPORT int unitybuf_write(URLContext *h, const unsigned char *buf, int size) {
+    if (h == NULL || h->priv_data == NULL || ((UnitybufContext *)h->priv_data)->states == NULL) {
+        return AVERROR(EINVAL);
+    }
+
     UnitybufStates *priv_data = ((UnitybufContext *)h->priv_data)->states;
     int lock_ret = local_lock(priv_data);
     if (lock_ret < 0) {
@@ -351,6 +382,10 @@ DLL_EXPORT int unitybuf_write_dll(UnitybufStates *priv_data, const unsigned char
         if (lock_ret < 0) {
             return lock_ret;
         }
+        if (priv_data->clear_count > 0 && unitybuf_count(priv_data) <= 0) {
+            local_unlock(priv_data);
+            return AVERROR_EOF;
+        }
         ret = unitybuf_write_inner(priv_data, buf, size);
         local_unlock(priv_data);
     }
@@ -359,6 +394,13 @@ DLL_EXPORT int unitybuf_write_dll(UnitybufStates *priv_data, const unsigned char
 }
 
 static int unitybuf_read_inner(UnitybufStates *priv_data, unsigned char *buf, int size) {
+    if (priv_data == NULL) {
+        return AVERROR(EINVAL);
+    }
+    if (priv_data->datas == NULL || priv_data->datas[0] == NULL || priv_data->data_lengths == NULL) {
+        return AVERROR(EAGAIN);
+    }
+
     if (priv_data->data_size <= 0) {
         if (size <= 0 || priv_data->count <= 0) {
             return AVERROR(EAGAIN);
@@ -423,18 +465,22 @@ static int unitybuf_read_inner(UnitybufStates *priv_data, unsigned char *buf, in
 }
 
 DLL_EXPORT int unitybuf_read(URLContext *h, unsigned char *buf, int size) {
+    if (h == NULL || h->priv_data == NULL || ((UnitybufContext *)h->priv_data)->states == NULL) {
+        return AVERROR(EINVAL);
+    }
+
     UnitybufStates *priv_data = ((UnitybufContext *)h->priv_data)->states;
     int lock_ret = local_lock(priv_data);
     if (lock_ret < 0) {
         return lock_ret;
     }
     int ret;
-    if (priv_data->clear_count > 0 && unitybuf_count(priv_data) <= 0) {
-        ret = AVERROR_EOF;
-    }
-    else { 
+    //if (priv_data->clear_count > 0 && unitybuf_count(priv_data) <= 0) {
+    //    ret = AVERROR_EOF;
+    //}
+    //else { 
         ret = unitybuf_read_inner(priv_data, buf, size);
-    }
+    //}
     local_unlock(priv_data);
     if (ret == AVERROR(EAGAIN)) {
         av_usleep(1);
@@ -463,6 +509,10 @@ DLL_EXPORT int unitybuf_read_dll(UnitybufStates *priv_data, unsigned char *buf, 
 }
 
 DLL_EXPORT int unitybuf_count_dll(UnitybufStates *handle) {
+    if (handle == NULL) {
+        return AVERROR(EINVAL);
+    }
+
     int lock_ret = local_lock(handle);
     if (lock_ret < 0) {
         return lock_ret;

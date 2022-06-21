@@ -118,7 +118,7 @@ public abstract class AbstractSession implements Session {
     public AbstractSession(final String[] arguments,
                            final LogCallback logCallback,
                            final LogRedirectionStrategy logRedirectionStrategy) {
-        this.sessionId = sessionIdGenerator.getAndIncrement();
+        long sessionId = sessionIdGenerator.getAndIncrement();
         this.logCallback = logCallback;
         this.createTime = new Date();
         this.startTime = null;
@@ -131,6 +131,11 @@ public abstract class AbstractSession implements Session {
         this.returnCode = null;
         this.failStackTrace = null;
         this.logRedirectionStrategy = logRedirectionStrategy;
+
+        while (!FFmpegKitConfig.canAddSession(sessionId)) {
+            sessionId = sessionIdGenerator.getAndIncrement();
+        }
+        this.sessionId = sessionId;
 
         FFmpegKitConfig.addSession(this);
     }

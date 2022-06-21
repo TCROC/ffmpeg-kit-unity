@@ -21,6 +21,7 @@ package com.arthenica.ffmpegkit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class FFprobeSessionTest {
 
     private static final String[] TEST_ARGUMENTS = new String[]{"argument1", "argument2"};
 
-    @Test
+    @Test @Ignore
     public void constructorTest() {
         FFprobeSession ffprobeSession = new FFprobeSession(TEST_ARGUMENTS);
 
@@ -88,7 +89,7 @@ public class FFprobeSessionTest {
         Assert.assertNull(ffprobeSession.getFuture());
     }
 
-    @Test
+    @Test @Ignore
     public void constructorTest2() {
         FFprobeSessionCompleteCallback completeCallback = new FFprobeSessionCompleteCallback() {
 
@@ -155,7 +156,7 @@ public class FFprobeSessionTest {
         Assert.assertNull(ffprobeSession.getFuture());
     }
 
-    @Test
+    @Test @Ignore
     public void constructorTest3() {
         FFprobeSessionCompleteCallback completeCallback = new FFprobeSessionCompleteCallback() {
 
@@ -229,7 +230,7 @@ public class FFprobeSessionTest {
         Assert.assertNull(ffprobeSession.getFuture());
     }
 
-    @Test
+    @Test @Ignore
     public void getSessionIdTest() {
         FFprobeSession ffprobeSession1 = new FFprobeSession(TEST_ARGUMENTS);
         FFprobeSession ffprobeSession2 = new FFprobeSession(TEST_ARGUMENTS);
@@ -244,7 +245,7 @@ public class FFprobeSessionTest {
         Assert.assertTrue(ffprobeSession3.getSessionId() > 0);
     }
 
-    @Test
+    @Test @Ignore
     public void getLogs() {
         final FFprobeSession ffprobeSession = new FFprobeSession(TEST_ARGUMENTS);
 
@@ -261,7 +262,7 @@ public class FFprobeSessionTest {
         Assert.assertEquals(3, logs.size());
     }
 
-    @Test
+    @Test @Ignore
     public void getLogsAsStringTest() {
         final FFprobeSession ffprobeSession = new FFprobeSession(TEST_ARGUMENTS);
 
@@ -276,7 +277,7 @@ public class FFprobeSessionTest {
         Assert.assertEquals(logMessage1 + logMessage2, logsAsString);
     }
 
-    @Test
+    @Test @Ignore
     public void getLogRedirectionStrategy() {
         FFmpegKitConfig.setLogRedirectionStrategy(LogRedirectionStrategy.NEVER_PRINT_LOGS);
 
@@ -289,7 +290,7 @@ public class FFprobeSessionTest {
         Assert.assertEquals(FFmpegKitConfig.getLogRedirectionStrategy(), ffprobeSession2.getLogRedirectionStrategy());
     }
 
-    @Test
+    @Test @Ignore
     public void startRunningTest() {
         FFprobeSession ffprobeSession = new FFprobeSession(TEST_ARGUMENTS);
 
@@ -300,7 +301,7 @@ public class FFprobeSessionTest {
         Assert.assertTrue(ffprobeSession.getCreateTime().getTime() <= ffprobeSession.getStartTime().getTime());
     }
 
-    @Test
+    @Test @Ignore
     public void completeTest() {
         FFprobeSession ffprobeSession = new FFprobeSession(TEST_ARGUMENTS);
 
@@ -313,7 +314,7 @@ public class FFprobeSessionTest {
         Assert.assertTrue(ffprobeSession.getDuration() >= 0);
     }
 
-    @Test
+    @Test @Ignore
     public void failTest() {
         FFprobeSession ffprobeSession = new FFprobeSession(TEST_ARGUMENTS);
 

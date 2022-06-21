@@ -263,6 +263,7 @@ extern volatile int handleSIGPIPE;
 extern __thread volatile long globalSessionId;
 extern void cancelSession(long sessionId);
 extern int cancelRequested(long sessionId);
+extern int getForceStopFlag(long sessionId);
 
 /* sub2video hack:
    Convert subtitles to video with alpha to insert them in filter graphs.
@@ -5012,6 +5013,11 @@ static int transcode(void)
         /* dump report by using the output first video and audio streams */
         print_report(0, timer_start, cur_time);
     }
+
+    if (getForceStopFlag(globalSessionId)) {
+        goto fail;
+    }
+
 #if HAVE_THREADS
     free_input_threads();
 #endif

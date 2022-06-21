@@ -1089,6 +1089,10 @@ public class FFmpegKitConfig {
         }
     }
 
+    static boolean canAddSession(final long id) {
+        return isEmptyId(id);
+    }
+
     /**
      * Adds a session to the session history.
      *
@@ -1480,4 +1484,5 @@ public class FFmpegKitConfig {
      */
     private native static void ignoreNativeSignal(final int signum);
 
+    private native static boolean isEmptyId(final long id);
 }
