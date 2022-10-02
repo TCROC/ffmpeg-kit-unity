@@ -21,6 +21,7 @@ package com.arthenica.ffmpegkit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class FFmpegSessionTest {
     static final String[] TEST_ARGUMENTS = new String[]{"argument1", "argument2"};
 
     @Test
+    @Ignore
     public void constructorTest() {
         FFmpegSession ffmpegSession = FFmpegSession.create(TEST_ARGUMENTS);
 
@@ -92,6 +94,7 @@ public class FFmpegSessionTest {
     }
 
     @Test
+    @Ignore
     public void constructorTest2() {
         FFmpegSessionCompleteCallback completeCallback = new FFmpegSessionCompleteCallback() {
 
@@ -162,6 +165,7 @@ public class FFmpegSessionTest {
     }
 
     @Test
+    @Ignore
     public void constructorTest3() {
         FFmpegSessionCompleteCallback completeCallback = new FFmpegSessionCompleteCallback() {
 
@@ -246,6 +250,7 @@ public class FFmpegSessionTest {
     }
 
     @Test
+    @Ignore
     public void getSessionIdTest() {
         FFmpegSession ffmpegSession1 = FFmpegSession.create(TEST_ARGUMENTS);
         FFmpegSession ffmpegSession2 = FFmpegSession.create(TEST_ARGUMENTS);
@@ -261,6 +266,7 @@ public class FFmpegSessionTest {
     }
 
     @Test
+    @Ignore
     public void getLogs() {
         final FFmpegSession ffmpegSession = FFmpegSession.create(TEST_ARGUMENTS);
 
@@ -278,6 +284,7 @@ public class FFmpegSessionTest {
     }
 
     @Test
+    @Ignore
     public void getLogsAsStringTest() {
         final FFmpegSession ffmpegSession = FFmpegSession.create(TEST_ARGUMENTS);
 
@@ -293,6 +300,7 @@ public class FFmpegSessionTest {
     }
 
     @Test
+    @Ignore
     public void getLogRedirectionStrategy() {
         FFmpegKitConfig.setLogRedirectionStrategy(LogRedirectionStrategy.NEVER_PRINT_LOGS);
 
@@ -306,6 +314,7 @@ public class FFmpegSessionTest {
     }
 
     @Test
+    @Ignore
     public void startRunningTest() {
         FFmpegSession ffmpegSession = FFmpegSession.create(TEST_ARGUMENTS);
 
@@ -317,6 +326,7 @@ public class FFmpegSessionTest {
     }
 
     @Test
+    @Ignore
     public void completeTest() {
         FFmpegSession ffmpegSession = FFmpegSession.create(TEST_ARGUMENTS);
 
@@ -330,6 +340,7 @@ public class FFmpegSessionTest {
     }
 
     @Test
+    @Ignore
     public void failTest() {
         FFmpegSession ffmpegSession = FFmpegSession.create(TEST_ARGUMENTS);
 

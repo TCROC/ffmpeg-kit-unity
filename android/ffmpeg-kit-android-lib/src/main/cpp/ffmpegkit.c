@@ -55,6 +55,7 @@ struct CallbackData {
 /** Session control variables */
 #define SESSION_MAP_SIZE 1000
 static atomic_short sessionMap[SESSION_MAP_SIZE];
+static atomic_short sessionForceStop[SESSION_MAP_SIZE];
 static atomic_int sessionInTransitMessageCountMap[SESSION_MAP_SIZE];
 
 /** Redirection control variables */
@@ -106,7 +107,7 @@ volatile int handleSIGXCPU = 1;
 volatile int handleSIGPIPE = 1;
 
 /** Holds the id of the current session */
-__thread long globalSessionId = 0;
+__thread volatile long globalSessionId = 0;
 
 /** Holds the default log level */
 int configuredLogLevel = AV_LOG_INFO;
@@ -126,7 +127,8 @@ JNINativeMethod configMethods[] = {
     {"getNativeBuildDate", "()Ljava/lang/String;", (void*) Java_com_arthenica_ffmpegkit_FFmpegKitConfig_getNativeBuildDate},
     {"setNativeEnvironmentVariable", "(Ljava/lang/String;Ljava/lang/String;)I", (void*) Java_com_arthenica_ffmpegkit_FFmpegKitConfig_setNativeEnvironmentVariable},
     {"ignoreNativeSignal", "(I)V", (void*) Java_com_arthenica_ffmpegkit_FFmpegKitConfig_ignoreNativeSignal},
-    {"messagesInTransmit", "(J)I", (void*) Java_com_arthenica_ffmpegkit_FFmpegKitConfig_messagesInTransmit}
+    {"messagesInTransmit", "(J)I", (void*) Java_com_arthenica_ffmpegkit_FFmpegKitConfig_messagesInTransmit},
+    {"isEmptyId", "(J)Z", (void*) Java_com_arthenica_ffmpegkit_FFmpegKitConfig_isEmptyId}
 };
 
 /** Forward declaration for function defined in fftools_ffmpeg.c */
@@ -412,6 +414,10 @@ void cancelSession(long id) {
     atomic_store(&sessionMap[id % SESSION_MAP_SIZE], 2);
 }
 
+void set_force_stop_flag(long id) {
+    atomic_store(&sessionForceStop[id % SESSION_MAP_SIZE], 1);
+}
+
 /**
  * Checks whether a cancel request for the given session id exists in the session map.
  *
@@ -420,6 +426,15 @@ void cancelSession(long id) {
  */
 int cancelRequested(long id) {
     if (atomic_load(&sessionMap[id % SESSION_MAP_SIZE]) == 2) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int getForceStopFlag(long id) {
+    if (atomic_load(&sessionForceStop[id % SESSION_MAP_SIZE]) == 1) {
+        atomic_store(&sessionForceStop[id % SESSION_MAP_SIZE], 0);
         return 1;
     } else {
         return 0;
@@ -919,4 +934,12 @@ JNIEXPORT void JNICALL Java_com_arthenica_ffmpegkit_FFmpegKitConfig_ignoreNative
  */
 JNIEXPORT int JNICALL Java_com_arthenica_ffmpegkit_FFmpegKitConfig_messagesInTransmit(JNIEnv *env, jclass object, jlong id) {
     return atomic_load(&sessionInTransitMessageCountMap[id % SESSION_MAP_SIZE]);
+}
+
+JNIEXPORT jboolean JNICALL Java_com_arthenica_ffmpegkit_FFmpegKitConfig_isEmptyId(JNIEnv *env, jclass object, jlong id) {
+    if (atomic_load(&sessionMap[((long)id) % SESSION_MAP_SIZE]) == 0) {
+        return JNI_TRUE;
+    } else {
+        return JNI_FALSE;
+    }
 }

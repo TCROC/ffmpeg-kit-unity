@@ -695,7 +695,7 @@ extern __thread HWDevice *filter_hw_device;
 
 extern __thread int want_sdp;
 extern __thread unsigned nb_output_dumped;
-extern __thread int main_ffmpeg_return_code;
+extern __thread volatile int main_ffmpeg_return_code;
 
 void term_init(void);
 void term_exit(void);

@@ -138,4 +138,6 @@ JNIEXPORT void JNICALL Java_com_arthenica_ffmpegkit_FFmpegKitConfig_ignoreNative
  */
 JNIEXPORT int JNICALL Java_com_arthenica_ffmpegkit_FFmpegKitConfig_messagesInTransmit(JNIEnv *env, jclass object, jlong id);
 
+JNIEXPORT jboolean JNICALL Java_com_arthenica_ffmpegkit_FFmpegKitConfig_isEmptyId(JNIEnv *env, jclass object, jlong id);
+
 #endif /* FFMPEG_KIT_H */

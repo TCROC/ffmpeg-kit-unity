@@ -166,6 +166,14 @@ public class FFmpegKit {
     public static FFmpegSession execute(final String command) {
         return executeWithArguments(FFmpegKitConfig.parseArguments(command));
     }
+    
+    public static FFmpegSession executeAsync(final String command) {
+        return executeAsync(command, new FFmpegSessionCompleteCallback() {
+            public void apply(FFmpegSession session) {
+                
+            }
+        });
+    }
 
     /**
      * <p>Starts an asynchronous FFmpeg execution for the given command. Space character is used to

@@ -23,6 +23,7 @@ import static com.arthenica.ffmpegkit.FFmpegSessionTest.TEST_ARGUMENTS;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -170,6 +171,7 @@ public class FFmpegKitConfigTest {
     }
 
     @Test
+    @Ignore
     public void setSessionHistorySize() {
         int newSize = 15;
         FFmpegKitConfig.setSessionHistorySize(newSize);

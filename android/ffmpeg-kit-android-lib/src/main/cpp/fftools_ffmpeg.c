@@ -287,9 +287,10 @@ extern volatile int handleSIGTERM;
 extern volatile int handleSIGXCPU;
 extern volatile int handleSIGPIPE;
 
-extern __thread long globalSessionId;
+extern __thread volatile long globalSessionId;
 extern void cancelSession(long sessionId);
 extern int cancelRequested(long sessionId);
+extern int getForceStopFlag(long sessionId);
 
 /* sub2video hack:
    Convert subtitles to video with alpha to insert them in filter graphs.
@@ -465,10 +466,10 @@ void term_exit(void)
 static volatile int received_sigterm = 0;
 static volatile int received_nb_signals = 0;
 __thread atomic_int transcode_init_done = ATOMIC_VAR_INIT(0);
-__thread int ffmpeg_exited = 0;
-__thread int main_ffmpeg_return_code = 0;
+__thread volatile int ffmpeg_exited = 0;
+__thread volatile int main_ffmpeg_return_code = 0;
 __thread int64_t copy_ts_first_pts = AV_NOPTS_VALUE;
-extern __thread int longjmp_value;
+extern __thread volatile int longjmp_value;
 
 static void
 sigterm_handler(int sig)
@@ -4576,6 +4577,11 @@ static int transcode(void)
         /* dump report by using the output first video and audio streams */
         print_report(0, timer_start, cur_time);
     }
+
+    if (getForceStopFlag(globalSessionId)) {
+        goto fail;
+    }
+
 #if HAVE_THREADS
     free_input_threads();
 #endif

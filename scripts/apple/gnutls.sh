@@ -12,6 +12,17 @@ export HOGWEED_LIBS="-L${LIB_INSTALL_BASE}/nettle/lib -lhogweed -L${LIB_INSTALL_
 export GMP_CFLAGS="-I${LIB_INSTALL_BASE}/gmp/include"
 export GMP_LIBS="-L${LIB_INSTALL_BASE}/gmp/lib -lgmp"
 
+# SET BUILD OPTIONS
+ASM_OPTIONS=""
+case ${ARCH} in
+arm64 | arm64e | arm64-mac-catalyst)
+  ASM_OPTIONS="--disable-hardware-acceleration"
+  ;;
+*)
+  ASM_OPTIONS="--enable-hardware-acceleration"
+  ;;
+esac
+
 # ALWAYS CLEAN THE PREVIOUS BUILD
 make distclean 2>/dev/null 1>/dev/null
 
@@ -28,7 +39,7 @@ fi
   --with-included-unistring \
   --without-idn \
   --without-p11-kit \
-  --enable-hardware-acceleration \
+  ${ASM_OPTIONS} \
   --enable-static \
   --disable-openssl-compatibility \
   --disable-shared \
@@ -43,6 +54,7 @@ fi
   --disable-full-test-suite \
   --host="${HOST}" || return 1
 
+touch src/gl/parse-datetime.c
 make -j$(get_cpu_count) || return 1
 
 make install || return 1
