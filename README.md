@@ -1,3 +1,26 @@
+This scripts are for '[FFmpeg for Unity](https://assetstore.unity.com/packages/tools/video/ffmpeg-for-unity-199811)'  
+It's not usually needed as the files you built from scratch are included in this assets.
+
+The default library build command is:
+- iOS
+```
+./ios.sh --enable-ios-audiotoolbox --enable-ios-avfoundation --enable-ios-bzip2 --enable-ios-videotoolbox --enable-ios-zlib --enable-ios-libiconv --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame --disable-arm64-simulator --xcframework
+```
+- Android
+```
+export PATH=/Users/username/Library/Android/sdk/cmake/3.18.1/bin:$PATH
+./android.sh --enable-android-media-codec --enable-android-zlib --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls  --enable-lame
+```
+- Mac
+```
+./macos.sh --enable-macos-audiotoolbox --enable-macos-avfoundation --enable-macos-bzip2 --enable-macos-videotoolbox --enable-macos-zlib --enable-macos-libiconv --enable-macos-coreimage --enable-macos-opencl --enable-macos-opengl --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame
+```
+Then replace [this repository](https://github.com/NON906/FfmpegUnityMacPlugin) with the generated files and then build.
+
+Original README.md is follow:
+
+---
+
 # FFmpegKit ![GitHub release](https://img.shields.io/badge/release-v4.5.1-blue.svg) ![Maven Central](https://img.shields.io/maven-central/v/com.arthenica/ffmpeg-kit-min) ![CocoaPods](https://img.shields.io/cocoapods/v/ffmpeg-kit-ios-min) ![pub](https://img.shields.io/pub/v/ffmpeg_kit_flutter.svg) ![npm](https://img.shields.io/npm/v/ffmpeg-kit-react-native.svg)
 
 <img src="https://github.com/tanersener/ffmpeg-kit/blob/main/docs/assets/ffmpeg-kit-icon-v9.png" width="240">
