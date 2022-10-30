@@ -60,8 +60,8 @@ include $(CLEAR_VARS)
 LOCAL_ARM_MODE := $(MY_ARM_MODE)
 LOCAL_MODULE := ffmpegkit_abidetect
 LOCAL_SRC_FILES := ffmpegkit_abidetect.c
-LOCAL_CFLAGS := -Wall -Wextra -Werror -Wno-unused-parameter -DFFMPEG_KIT_${MY_ARCH_FLAGS}
-LOCAL_C_INCLUDES := $(FFMPEG_INCLUDES)
+LOCAL_CFLAGS := -Wall -Wextra -Wno-unused-parameter -DFFMPEG_KIT_${MY_ARCH_FLAGS} # -Werror
+LOCAL_C_INCLUDES := $(FFMPEG_INCLUDES) $(MY_LOCAL_PATH)/../ffmpeg-kit-android-lib/src/main/cpp/SDL2
 LOCAL_LDLIBS := -llog -lz -landroid
 LOCAL_STATIC_LIBRARIES := cpu-features
 LOCAL_ARM_NEON := ${MY_ARM_NEON}
@@ -69,7 +69,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module, cpu-features)
 
-MY_SRC_FILES := ffmpegkit.c ffprobekit.c ffmpegkit_exception.c fftools_cmdutils.c fftools_ffmpeg.c fftools_ffprobe.c fftools_ffmpeg_mux.c fftools_ffmpeg_opt.c fftools_opt_common.c fftools_ffmpeg_hw.c fftools_ffmpeg_filter.c
+MY_SRC_FILES := ffmpegkit.c ffprobekit.c ffmpegkit_exception.c fftools_cmdutils.c fftools_ffmpeg.c fftools_ffprobe.c fftools_ffmpeg_mux.c fftools_ffmpeg_opt.c fftools_opt_common.c fftools_ffmpeg_hw.c fftools_ffmpeg_filter.c ffplay.c
 
 ifeq ($(TARGET_PLATFORM),android-16)
     MY_SRC_FILES += android_lts_support.c
@@ -77,7 +77,7 @@ else ifeq ($(TARGET_PLATFORM),android-17)
     MY_SRC_FILES += android_lts_support.c
 endif
 
-MY_CFLAGS := -Wall -Werror -Wno-unused-parameter -Wno-switch -Wno-sign-compare
+MY_CFLAGS := -Wall -Wno-unused-parameter -Wno-switch -Wno-sign-compare -DFFMPEG_KIT # -Werror
 MY_LDLIBS := -llog -lz -landroid
 
 MY_BUILD_GENERIC_FFMPEG_KIT := true
