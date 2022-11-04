@@ -29,7 +29,8 @@ libffmpegkit_la_SOURCES = \
     fftools_ffmpeg_opt.c \
     fftools_ffprobe.c \
     fftools_opt_common.c \
-    ffplay.c
+    ffplay.c \
+    unitybuf.c
 
 include_HEADERS = \
     AbstractSession.h \
@@ -62,7 +63,8 @@ include_HEADERS = \
     fftools_cmdutils.h \
     fftools_ffmpeg.h \
     fftools_fopen_utf8.h \
-    fftools_opt_common.h
+    fftools_opt_common.h \
+    unitybuf.h
 
 libffmpegkit_la_CFLAGS = $(CFLAGS) -I./SDL2 -DFFMPEG_KIT
 libffmpegkit_la_OBJCFLAGS = $(CFLAGS)

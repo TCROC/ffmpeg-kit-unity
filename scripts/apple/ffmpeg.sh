@@ -487,6 +487,14 @@ ${SED_INLINE} 's/static int av_log_level/__thread int av_log_level/g' "${BASEDIR
 
 ###################################################################
 
+cp -f "${BASEDIR}"/unitybuf_apple/unitybuf_wrapper.c "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
+cp -f "${BASEDIR}"/unitybuf_apple/unitybuf_wrapper.h "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
+git checkout "${BASEDIR}"/src/ffmpeg/libavformat/Makefile 1>>"${BASEDIR}"/build.log 2>&1
+sed -i -e "s/version\.h/version\.h unitybuf_wrapper\.h/g" "${BASEDIR}"/src/ffmpeg/libavformat/Makefile 1>>"${BASEDIR}"/build.log 2>&1
+sed -i -e "s/unix\.o/unix\.o\nOBJS\-\$\(CONFIG_UNITYBUF_PROTOCOL\)         \+\= unitybuf_wrapper\.o/g" "${BASEDIR}"/src/ffmpeg/libavformat/Makefile 1>>"${BASEDIR}"/build.log 2>&1
+git checkout "${BASEDIR}"/src/ffmpeg/libavformat/protocols.c 1>>"${BASEDIR}"/build.log 2>&1
+sed -i -e "s/extern const URLProtocol ff_libzmq_protocol\;/extern const URLProtocol ff_libzmq_protocol\;\nextern const URLProtocol ff_unitybuf_protocol\;/g" "${BASEDIR}"/src/ffmpeg/libavformat/protocols.c 1>>"${BASEDIR}"/build.log 2>&1
+
 ./configure \
   --cross-prefix="${HOST}-" \
   --sysroot="${SDK_PATH}" \
@@ -655,6 +663,8 @@ overwrite_file "${BASEDIR}"/src/ffmpeg/libavutil/aarch64/timer.h "${FFMPEG_LIBRA
 overwrite_file "${BASEDIR}"/src/ffmpeg/libavutil/x86/emms.h "${FFMPEG_LIBRARY_PATH}"/include/libavutil/x86/emms.h 1>>"${BASEDIR}"/build.log 2>&1
 
 overwrite_file "${BASEDIR}"/src/ffmpeg/config_components.h "${FFMPEG_LIBRARY_PATH}"/include/config_components.h 1>>"${BASEDIR}"/build.log 2>&1
+
+git checkout "${BASEDIR}"/src/ffmpeg/libavformat 1>>"${BASEDIR}"/build.log 2>&1
 
 if [ $? -eq 0 ]; then
   echo "ok"

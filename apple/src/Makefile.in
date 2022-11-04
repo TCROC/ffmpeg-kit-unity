@@ -153,7 +153,7 @@ am_libffmpegkit_la_OBJECTS = libffmpegkit_la-AbstractSession.lo \
 	libffmpegkit_la-fftools_ffmpeg_opt.lo \
 	libffmpegkit_la-fftools_ffprobe.lo \
 	libffmpegkit_la-fftools_opt_common.lo \
-	libffmpegkit_la-ffplay.lo
+	libffmpegkit_la-ffplay.lo libffmpegkit_la-unitybuf.lo
 libffmpegkit_la_OBJECTS = $(am_libffmpegkit_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -204,7 +204,8 @@ am__depfiles_remade = ./$(DEPDIR)/libffmpegkit_la-AbstractSession.Plo \
 	./$(DEPDIR)/libffmpegkit_la-fftools_ffmpeg_mux.Plo \
 	./$(DEPDIR)/libffmpegkit_la-fftools_ffmpeg_opt.Plo \
 	./$(DEPDIR)/libffmpegkit_la-fftools_ffprobe.Plo \
-	./$(DEPDIR)/libffmpegkit_la-fftools_opt_common.Plo
+	./$(DEPDIR)/libffmpegkit_la-fftools_opt_common.Plo \
+	./$(DEPDIR)/libffmpegkit_la-unitybuf.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -423,7 +424,8 @@ libffmpegkit_la_SOURCES = \
     fftools_ffmpeg_opt.c \
     fftools_ffprobe.c \
     fftools_opt_common.c \
-    ffplay.c
+    ffplay.c \
+    unitybuf.c
 
 include_HEADERS = \
     AbstractSession.h \
@@ -456,7 +458,8 @@ include_HEADERS = \
     fftools_cmdutils.h \
     fftools_ffmpeg.h \
     fftools_fopen_utf8.h \
-    fftools_opt_common.h
+    fftools_opt_common.h \
+    unitybuf.h
 
 libffmpegkit_la_CFLAGS = $(CFLAGS) -I./SDL2 -DFFMPEG_KIT
 libffmpegkit_la_OBJCFLAGS = $(CFLAGS)
@@ -567,6 +570,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libffmpegkit_la-fftools_ffmpeg_opt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libffmpegkit_la-fftools_ffprobe.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libffmpegkit_la-fftools_opt_common.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libffmpegkit_la-unitybuf.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -660,6 +664,13 @@ libffmpegkit_la-ffplay.lo: ffplay.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ffplay.c' object='libffmpegkit_la-ffplay.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libffmpegkit_la_CFLAGS) $(CFLAGS) -c -o libffmpegkit_la-ffplay.lo `test -f 'ffplay.c' || echo '$(srcdir)/'`ffplay.c
+
+libffmpegkit_la-unitybuf.lo: unitybuf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libffmpegkit_la_CFLAGS) $(CFLAGS) -MT libffmpegkit_la-unitybuf.lo -MD -MP -MF $(DEPDIR)/libffmpegkit_la-unitybuf.Tpo -c -o libffmpegkit_la-unitybuf.lo `test -f 'unitybuf.c' || echo '$(srcdir)/'`unitybuf.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libffmpegkit_la-unitybuf.Tpo $(DEPDIR)/libffmpegkit_la-unitybuf.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unitybuf.c' object='libffmpegkit_la-unitybuf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libffmpegkit_la_CFLAGS) $(CFLAGS) -c -o libffmpegkit_la-unitybuf.lo `test -f 'unitybuf.c' || echo '$(srcdir)/'`unitybuf.c
 
 .m.o:
 @am__fastdepOBJC_TRUE@	$(AM_V_OBJC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -992,6 +1003,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libffmpegkit_la-fftools_ffmpeg_opt.Plo
 	-rm -f ./$(DEPDIR)/libffmpegkit_la-fftools_ffprobe.Plo
 	-rm -f ./$(DEPDIR)/libffmpegkit_la-fftools_opt_common.Plo
+	-rm -f ./$(DEPDIR)/libffmpegkit_la-unitybuf.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1064,6 +1076,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libffmpegkit_la-fftools_ffmpeg_opt.Plo
 	-rm -f ./$(DEPDIR)/libffmpegkit_la-fftools_ffprobe.Plo
 	-rm -f ./$(DEPDIR)/libffmpegkit_la-fftools_opt_common.Plo
+	-rm -f ./$(DEPDIR)/libffmpegkit_la-unitybuf.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
