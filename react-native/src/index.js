@@ -297,13 +297,6 @@ export class AbstractSession extends Session {
   #logRedirectionStrategy;
 
   /**
-   * Creates a new abstract session.
-   */
-  constructor() {
-    super();
-  }
-
-  /**
    * Creates a new FFmpeg session.
    *
    * @param argumentsArray FFmpeg command arguments
@@ -669,11 +662,12 @@ export class AbstractSession extends Session {
   }
 
   /**
-   * Cancels running the session.
+   * Cancels running the session. Only starts cancellation. Does not guarantee that session is cancelled when promise resolves.
    */
-  cancel() {
+  async cancel() {
+    const sessionId = this.getSessionId();
     if (sessionId === undefined) {
-      return FFmpegKitReactNativeModule.cancel();
+      return Promise.reject(new Error('sessionId is not defined'));
     } else {
       return FFmpegKitReactNativeModule.cancelSession(sessionId);
     }
@@ -809,6 +803,15 @@ export class FFmpegKitConfig {
    */
   static async init() {
     await FFmpegKitInitializer.initialize();
+  }
+
+  /**
+   * Uninitializes the library.
+   *
+   * Calling this method before application termination is recommended but not required.
+   */
+  static async uninit() {
+    return FFmpegKitReactNativeModule.uninit();
   }
 
   /**
@@ -1595,12 +1598,12 @@ class FFmpegKitFactory {
     if (sessionMap !== undefined) {
       switch (sessionMap.type) {
         case 2:
-          return FFprobeSession.fromMap(sessionMap);
+          return AbstractSession.createFFprobeSessionFromMap(sessionMap);
         case 3:
-          return MediaInformationSession.fromMap(sessionMap);
+          return AbstractSession.createMediaInformationSessionFromMap(sessionMap);
         case 1:
         default:
-          return FFmpegSession.fromMap(sessionMap);
+          return AbstractSession.createFFmpegSessionFromMap(sessionMap);
       }
     } else {
       return undefined;
@@ -1608,7 +1611,7 @@ class FFmpegKitFactory {
   }
 
   static getVersion() {
-    return "4.5.1";
+    return "5.1.0";
   }
 
   static getLogRedirectionStrategy(sessionId) {
@@ -1926,13 +1929,6 @@ class FFmpegKitInitializer {
 export class FFmpegSession extends AbstractSession {
 
   /**
-   * Creates an empty FFmpeg session.
-   */
-  constructor() {
-    super();
-  }
-
-  /**
    * Creates a new FFmpeg session.
    *
    * @param argumentsArray FFmpeg command arguments
@@ -1951,16 +1947,6 @@ export class FFmpegSession extends AbstractSession {
     FFmpegKitFactory.setStatisticsCallback(sessionId, statisticsCallback);
 
     return session;
-  }
-
-  /**
-   * Creates a new FFmpeg session from the given map.
-   *
-   * @param sessionMap map that includes session fields as map keys
-   * @returns FFmpeg session created
-   */
-  static fromMap(sessionMap) {
-    return AbstractSession.createFFmpegSessionFromMap(sessionMap);
   }
 
   /**
@@ -2243,13 +2229,6 @@ export class FFprobeKit {
 export class FFprobeSession extends AbstractSession {
 
   /**
-   * Creates an empty FFprobe session.
-   */
-  constructor() {
-    super();
-  }
-
-  /**
    * Creates a new FFprobe session.
    *
    * @param argumentsArray FFprobe command arguments
@@ -2266,16 +2245,6 @@ export class FFprobeSession extends AbstractSession {
     FFmpegKitFactory.setLogCallback(sessionId, logCallback);
 
     return session;
-  }
-
-  /**
-   * Creates a new FFprobe session from the given map.
-   *
-   * @param sessionMap map that includes session fields as map keys
-   * @returns FFprobe session created
-   */
-  static fromMap(sessionMap) {
-    return AbstractSession.createFFprobeSessionFromMap(sessionMap);
   }
 
   /**
@@ -2428,7 +2397,7 @@ export class Log {
  */
 export class MediaInformation {
 
-  static KEY_MEDIA_PROPERTIES = "format";
+  static KEY_FORMAT_PROPERTIES = "format";
   static KEY_FILENAME = "filename";
   static KEY_FORMAT = "format_name";
   static KEY_FORMAT_LONG = "format_long_name";
@@ -2450,7 +2419,7 @@ export class MediaInformation {
    * @return media file name
    */
   getFilename() {
-    return this.getStringProperty(MediaInformation.KEY_FILENAME);
+    return this.getStringFormatProperty(MediaInformation.KEY_FILENAME);
   }
 
   /**
@@ -2459,7 +2428,7 @@ export class MediaInformation {
    * @return media format
    */
   getFormat() {
-    return this.getStringProperty(MediaInformation.KEY_FORMAT);
+    return this.getStringFormatProperty(MediaInformation.KEY_FORMAT);
   }
 
   /**
@@ -2468,16 +2437,16 @@ export class MediaInformation {
    * @return media long format
    */
   getLongFormat() {
-    return this.getStringProperty(MediaInformation.KEY_FORMAT_LONG);
+    return this.getStringFormatProperty(MediaInformation.KEY_FORMAT_LONG);
   }
 
   /**
    * Returns duration.
    *
-   * @return media duration in milliseconds
+   * @return media duration in "seconds.microseconds" format
    */
   getDuration() {
-    return this.getStringProperty(MediaInformation.KEY_DURATION);
+    return this.getStringFormatProperty(MediaInformation.KEY_DURATION);
   }
 
   /**
@@ -2486,7 +2455,7 @@ export class MediaInformation {
    * @return media start time in milliseconds
    */
   getStartTime() {
-    return this.getStringProperty(MediaInformation.KEY_START_TIME);
+    return this.getStringFormatProperty(MediaInformation.KEY_START_TIME);
   }
 
   /**
@@ -2495,7 +2464,7 @@ export class MediaInformation {
    * @return media size in bytes
    */
   getSize() {
-    return this.getStringProperty(MediaInformation.KEY_SIZE);
+    return this.getStringFormatProperty(MediaInformation.KEY_SIZE);
   }
 
   /**
@@ -2504,7 +2473,7 @@ export class MediaInformation {
    * @return media bitrate in kb/s
    */
   getBitrate() {
-    return this.getStringProperty(MediaInformation.KEY_BIT_RATE);
+    return this.getStringFormatProperty(MediaInformation.KEY_BIT_RATE);
   }
 
   /**
@@ -2513,7 +2482,7 @@ export class MediaInformation {
    * @return tags dictionary
    */
   getTags() {
-    return this.getProperties(MediaInformation.KEY_TAGS);
+    return this.getFormatProperty(MediaInformation.KEY_TAGS);
   }
 
   /**
@@ -2561,58 +2530,103 @@ export class MediaInformation {
   }
 
   /**
-   * Returns the media property associated with the key.
+   * Returns the property associated with the key.
    *
    * @param key property key
-   * @return media property as string or undefined if the key is not found
+   * @return property as string or undefined if the key is not found
    */
   getStringProperty(key) {
-    let mediaProperties = this.getMediaProperties();
-    if (mediaProperties !== undefined) {
-      return mediaProperties[key];
+    let allProperties = this.getAllProperties();
+    if (allProperties !== undefined) {
+      return allProperties[key];
     } else {
       return undefined;
     }
   }
 
   /**
-   * Returns the media property associated with the key.
+   * Returns the property associated with the key.
    *
    * @param key property key
-   * @return media property as number or undefined if the key is not found
+   * @return property as number or undefined if the key is not found
    */
   getNumberProperty(key) {
-    let mediaProperties = this.getMediaProperties();
-    if (mediaProperties !== undefined) {
-      return mediaProperties[key];
+    let allProperties = this.getAllProperties();
+    if (allProperties !== undefined) {
+      return allProperties[key];
     } else {
       return undefined;
     }
   }
 
   /**
-   * Returns the media properties associated with the key.
+   * Returns the property associated with the key.
    *
-   * @param key properties key
-   * @return media properties as an object or undefined if the key is not found
+   * @param key property key
+   * @return property as an object or undefined if the key is not found
    */
-  getProperties(key) {
-    let mediaProperties = this.getMediaProperties();
-    if (mediaProperties !== undefined) {
-      return mediaProperties[key];
+  getProperty(key) {
+    let allProperties = this.getAllProperties();
+    if (allProperties !== undefined) {
+      return allProperties[key];
     } else {
       return undefined;
     }
   }
 
   /**
-   * Returns all media properties.
+   * Returns the format property associated with the key.
    *
-   * @returns an object where media properties can be accessed by property names
+   * @param key property key
+   * @return format property as string or undefined if the key is not found
    */
-  getMediaProperties() {
+  getStringFormatProperty(key) {
+    let formatProperties = this.getFormatProperties();
+    if (formatProperties !== undefined) {
+      return formatProperties[key];
+    } else {
+      return undefined;
+    }
+  }
+
+  /**
+   * Returns the format property associated with the key.
+   *
+   * @param key property key
+   * @return format property as number or undefined if the key is not found
+   */
+  getNumberFormatProperty(key) {
+    let formatProperties = this.getFormatProperties();
+    if (formatProperties !== undefined) {
+      return formatProperties[key];
+    } else {
+      return undefined;
+    }
+  }
+
+  /**
+   * Returns the format property associated with the key.
+   *
+   * @param key property key
+   * @return format property as an object or undefined if the key is not found
+   */
+  getFormatProperty(key) {
+    let formatProperties = this.getFormatProperties();
+    if (formatProperties !== undefined) {
+      return formatProperties[key];
+    } else {
+      return undefined;
+    }
+  }
+
+  /**
+   * Returns all format properties defined.
+   *
+   * @returns an object where format properties can be accessed by property names
+   */
+  getFormatProperties() {
     if (this.#allProperties !== undefined) {
-      return this.#allProperties.format;
+      return this.#allProperties[MediaInformation.KEY_FORMAT_PROPERTIES];
     } else {
       return undefined;
     }
@@ -2668,13 +2682,6 @@ export class MediaInformationSession extends AbstractSession {
   #mediaInformation;
 
   /**
-   * Creates an empty MediaInformationSession.
-   */
-  constructor() {
-    super();
-  }
-
-  /**
    * Creates a new MediaInformationSession session.
    *
    * @param argumentsArray FFprobe command arguments
@@ -2690,16 +2697,6 @@ export class MediaInformationSession extends AbstractSession {
     FFmpegKitFactory.setLogCallback(sessionId, logCallback);
 
     return session;
-  }
-
-  /**
-   * Creates a new MediaInformationSession from the given map.
-   *
-   * @param sessionMap map that includes session fields as map keys
-   * @returns MediaInformationSession created
-   */
-  static fromMap(sessionMap) {
-    return AbstractSession.createMediaInformationSessionFromMap(sessionMap);
   }
 
   /**
@@ -3094,7 +3091,7 @@ export class StreamInformation {
    * @return tags object
    */
   getTags() {
-    return this.getProperties(StreamInformation.KEY_TAGS);
+    return this.getProperty(StreamInformation.KEY_TAGS);
   }
 
   /**
@@ -3126,12 +3123,12 @@ export class StreamInformation {
   }
 
   /**
-   * Returns the stream properties associated with the key.
+   * Returns the stream property associated with the key.
    *
-   * @param key properties key
-   * @return stream properties as an object or undefined if the key is not found
+   * @param key property key
+   * @return stream property as an object or undefined if the key is not found
    */
-  getProperties(key) {
+  getProperty(key) {
     if (this.#allProperties !== undefined) {
       return this.#allProperties[key];
     } else {
@@ -3228,7 +3225,7 @@ export class Chapter {
    * @return tags object
    */
   getTags() {
-    return this.getProperties(StreamInformation.KEY_TAGS);
+    return this.getProperty(StreamInformation.KEY_TAGS);
   }
 
   /**
@@ -3260,12 +3257,12 @@ export class Chapter {
   }
 
   /**
-   * Returns the chapter properties associated with the key.
+   * Returns the chapter property associated with the key.
    *
-   * @param key properties key
-   * @return chapter properties as an object or undefined if the key is not found
+   * @param key property key
+   * @return chapter property as an object or undefined if the key is not found
    */
-  getProperties(key) {
+  getProperty(key) {
     if (this.#allProperties !== undefined) {
       return this.#allProperties[key];
     } else {

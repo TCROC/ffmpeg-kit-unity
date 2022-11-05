@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Taner Sener
+ * Copyright (c) 2021-2022 Taner Sener
  *
  * This file is part of FFmpegKit.
  *
@@ -244,7 +244,7 @@ RCT_EXPORT_METHOD(getArch:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRe
 // FFmpegSession
 
 RCT_EXPORT_METHOD(ffmpegSession:(NSArray*)arguments resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-    FFmpegSession* session = [[FFmpegSession alloc] init:arguments withCompleteCallback:nil withLogCallback:nil withStatisticsCallback:nil withLogRedirectionStrategy:LogRedirectionStrategyNeverPrintLogs];
+    FFmpegSession* session = [FFmpegSession create:arguments withCompleteCallback:nil withLogCallback:nil withStatisticsCallback:nil withLogRedirectionStrategy:LogRedirectionStrategyNeverPrintLogs];
     resolve([FFmpegKitReactNativeModule toSessionDictionary:session]);
 }
 
@@ -285,37 +285,35 @@ RCT_EXPORT_METHOD(ffmpegSessionGetStatistics:(int)sessionId resolver:(RCTPromise
 // FFprobeSession
 
 RCT_EXPORT_METHOD(ffprobeSession:(NSArray*)arguments resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-    FFprobeSession* session = [[FFprobeSession alloc] init:arguments withCompleteCallback:nil withLogCallback:nil withLogRedirectionStrategy:LogRedirectionStrategyNeverPrintLogs];
+    FFprobeSession* session = [FFprobeSession create:arguments withCompleteCallback:nil withLogCallback:nil withLogRedirectionStrategy:LogRedirectionStrategyNeverPrintLogs];
     resolve([FFmpegKitReactNativeModule toSessionDictionary:session]);
 }
 
 // MediaInformationSession
 
 RCT_EXPORT_METHOD(mediaInformationSession:(NSArray*)arguments resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-    MediaInformationSession* session = [[MediaInformationSession alloc] init:arguments withCompleteCallback:nil withLogCallback:nil];
+    MediaInformationSession* session = [MediaInformationSession create:arguments withCompleteCallback:nil withLogCallback:nil];
     resolve([FFmpegKitReactNativeModule toSessionDictionary:session]);
 }
 
 // MediaInformationJsonParser
 
 RCT_EXPORT_METHOD(mediaInformationJsonParserFrom:(NSString*)ffprobeJsonOutput resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-    NSError *error;
-    MediaInformation* mediaInformation = [MediaInformationJsonParser from:ffprobeJsonOutput with:error];
-    if (error == nil) {
+    @try {
+        MediaInformation* mediaInformation = [MediaInformationJsonParser fromWithError:ffprobeJsonOutput];
         resolve([FFmpegKitReactNativeModule toMediaInformationDictionary:mediaInformation]);
-    } else {
-        NSLog(@"MediaInformation parsing failed: %@.\n", error);
+    } @catch (NSException *exception) {
+        NSLog(@"Parsing MediaInformation failed: %@.\n", [NSString stringWithFormat:@"%@\n%@", [exception userInfo], [exception callStackSymbols]]);
         resolve(nil);
     }
 }
 
 RCT_EXPORT_METHOD(mediaInformationJsonParserFromWithError:(NSString*)ffprobeJsonOutput resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-    NSError *error;
-    MediaInformation* mediaInformation = [MediaInformationJsonParser from:ffprobeJsonOutput with:error];
-    if (error == nil) {
+    @try {
+        MediaInformation* mediaInformation = [MediaInformationJsonParser fromWithError:ffprobeJsonOutput];
         resolve([FFmpegKitReactNativeModule toMediaInformationDictionary:mediaInformation]);
-    } else {
-        NSLog(@"MediaInformation parsing failed: %@.\n", error);
+    } @catch (NSException *exception) {
+        NSLog(@"Parsing MediaInformation failed: %@.\n", [NSString stringWithFormat:@"%@\n%@", [exception userInfo], [exception callStackSymbols]]);
         reject(@"PARSE_FAILED", @"Parsing MediaInformation failed with JSON error.", nil);
     }
 }
@@ -695,6 +693,10 @@ RCT_EXPORT_METHOD(getExternalLibraries:(RCTPromiseResolveBlock)resolve rejecter:
     resolve([Packages getExternalLibraries]);
 }
 
+RCT_EXPORT_METHOD(uninit:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+    resolve(nil);
+}
+
 - (void)enableLogs {
     logsEnabled = true;
 }
@@ -724,16 +726,14 @@ RCT_EXPORT_METHOD(getExternalLibraries:(RCTPromiseResolveBlock)resolve rejecter:
         dictionary[KEY_SESSION_START_TIME] = [NSNumber numberWithDouble:[[session getStartTime] timeIntervalSince1970]*1000];
         dictionary[KEY_SESSION_COMMAND] = [session getCommand];
 
-        if ([session isFFprobe]) {
-          if ([session isMediaInformation]) {
-            MediaInformationSession *mediaInformationSession = (MediaInformationSession*)session;
-            dictionary[KEY_SESSION_MEDIA_INFORMATION] = [FFmpegKitReactNativeModule toMediaInformationDictionary:[mediaInformationSession getMediaInformation]];
-            dictionary[KEY_SESSION_TYPE] = [NSNumber numberWithInt:SESSION_TYPE_MEDIA_INFORMATION];
-          } else {
-            dictionary[KEY_SESSION_TYPE] = [NSNumber numberWithInt:SESSION_TYPE_FFPROBE];
-          }
-        } else {
+        if ([session isFFmpeg]) {
           dictionary[KEY_SESSION_TYPE] = [NSNumber numberWithInt:SESSION_TYPE_FFMPEG];
+        } else if ([session isFFprobe]) {
+          dictionary[KEY_SESSION_TYPE] = [NSNumber numberWithInt:SESSION_TYPE_FFPROBE];
+        } else if ([session isMediaInformation]) {
+          MediaInformationSession *mediaInformationSession = (MediaInformationSession*)session;
+          dictionary[KEY_SESSION_MEDIA_INFORMATION] = [FFmpegKitReactNativeModule toMediaInformationDictionary:[mediaInformationSession getMediaInformation]];
+          dictionary[KEY_SESSION_TYPE] = [NSNumber numberWithInt:SESSION_TYPE_MEDIA_INFORMATION];
         }
 
         return dictionary;

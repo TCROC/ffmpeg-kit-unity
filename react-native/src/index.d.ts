@@ -2,8 +2,6 @@ declare module 'ffmpeg-kit-react-native' {
 
   export abstract class AbstractSession implements Session {
 
-    protected constructor();
-
     static createFFmpegSession(argumentsArray: Array<string>, logRedirectionStrategy?: LogRedirectionStrategy): Promise<FFmpegSession>;
 
     static createFFmpegSessionFromMap(sessionMap: { [key: string]: any }): FFmpegSession;
@@ -91,6 +89,8 @@ declare module 'ffmpeg-kit-react-native' {
   export class FFmpegKitConfig {
 
     static init(): Promise<void>;
+
+    static uninit(): Promise<void>;
 
     static enableRedirection(): Promise<void>;
 
@@ -210,11 +210,7 @@ declare module 'ffmpeg-kit-react-native' {
 
   export class FFmpegSession extends AbstractSession implements Session {
 
-    constructor();
-
     static create(argumentsArray: Array<string>, completeCallback?: FFmpegSessionCompleteCallback, logCallback?: LogCallback, statisticsCallback?: StatisticsCallback, logRedirectionStrategy?: LogRedirectionStrategy): Promise<FFmpegSession>;
-
-    static fromMap(sessionMap: { [key: string]: any }): FFmpegSession;
 
     getStatisticsCallback(): StatisticsCallback;
 
@@ -264,11 +260,7 @@ declare module 'ffmpeg-kit-react-native' {
 
   export class FFprobeSession extends AbstractSession implements Session {
 
-    constructor();
-
     static create(argumentsArray: Array<string>, completeCallback?: FFprobeSessionCompleteCallback, logCallback?: LogCallback, logRedirectionStrategy?: LogRedirectionStrategy): Promise<FFprobeSession>;
-
-    static fromMap(sessionMap: { [key: string]: any }): FFprobeSession;
 
     getCompleteCallback(): FFprobeSessionCompleteCallback;
 
@@ -319,7 +311,7 @@ declare module 'ffmpeg-kit-react-native' {
 
   export class MediaInformation {
 
-    static readonly KEY_MEDIA_PROPERTIES: string;
+    static readonly KEY_FORMAT_PROPERTIES: string;
     static readonly KEY_FILENAME: string;
     static readonly KEY_FORMAT: string;
     static readonly KEY_FORMAT_LONG: string;
@@ -355,9 +347,15 @@ declare module 'ffmpeg-kit-react-native' {
 
     getNumberProperty(key: string): number;
 
-    getProperties(key: string): Record<string, any>;
+    getProperty(key: string): any;
 
-    getMediaProperties(): Record<string, any>;
+    getStringFormatProperty(key: string): string;
+
+    getNumberFormatProperty(key: string): number;
+
+    getFormatProperty(key: string): any;
+
+    getFormatProperties(): Record<string, any>;
 
     getAllProperties(): Record<string, any>;
 
@@ -373,11 +371,7 @@ declare module 'ffmpeg-kit-react-native' {
 
   export class MediaInformationSession extends AbstractSession implements Session {
 
-    constructor();
-
     static create(argumentsArray: Array<string>, completeCallback?: MediaInformationSessionCompleteCallback, logCallback?: LogCallback): Promise<MediaInformationSession>;
-
-    static fromMap(sessionMap: { [key: string]: any }): MediaInformationSession;
 
     getMediaInformation(): MediaInformation;
 
@@ -589,7 +583,7 @@ declare module 'ffmpeg-kit-react-native' {
 
     getNumberProperty(key): number;
 
-    getProperties(key): Record<string, any>;
+    getProperty(key): any;
 
     getAllProperties(): Record<string, any>;
 
@@ -625,7 +619,7 @@ declare module 'ffmpeg-kit-react-native' {
 
     getNumberProperty(key): number;
 
-    getProperties(key): Record<string, any>;
+    getProperty(key): any;
 
     getAllProperties(): Record<string, any>;
 

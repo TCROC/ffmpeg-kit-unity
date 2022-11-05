@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Taner Sener
+ * Copyright (c) 2021-2022 Taner Sener
  *
  * This file is part of FFmpegKit.
  *
@@ -47,7 +47,6 @@ import com.arthenica.ffmpegkit.Signal;
 import com.arthenica.ffmpegkit.Statistics;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.BaseActivityEventListener;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -75,7 +74,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class FFmpegKitReactNativeModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class FFmpegKitReactNativeModule extends ReactContextBaseJavaModule {
 
   public static final String LIBRARY_NAME = "ffmpeg-kit-react-native";
   public static final String PLATFORM_NAME = "android";
@@ -131,7 +130,6 @@ public class FFmpegKitReactNativeModule extends ReactContextBaseJavaModule imple
     this.asyncExecutorService = Executors.newFixedThreadPool(asyncWriteToPipeConcurrencyLimit);
 
     if (reactContext != null) {
-      reactContext.addLifecycleEventListener(this);
       registerGlobalCallbacks(reactContext);
     }
   }
@@ -149,19 +147,6 @@ public class FFmpegKitReactNativeModule extends ReactContextBaseJavaModule imple
   @Override
   public String getName() {
     return "FFmpegKitReactNativeModule";
-  }
-
-  @Override
-  public void onHostResume() {
-  }
-
-  @Override
-  public void onHostPause() {
-  }
-
-  @Override
-  public void onHostDestroy() {
-    this.asyncExecutorService.shutdown();
   }
 
   protected void registerGlobalCallbacks(final ReactApplicationContext reactContext) {
@@ -359,7 +344,7 @@ public class FFmpegKitReactNativeModule extends ReactContextBaseJavaModule imple
 
   @ReactMethod
   public void ffmpegSession(final ReadableArray readableArray, final Promise promise) {
-    promise.resolve(toMap(new FFmpegSession(toArgumentsArray(readableArray), null, null, null, LogRedirectionStrategy.NEVER_PRINT_LOGS)));
+    promise.resolve(toMap(FFmpegSession.create(toArgumentsArray(readableArray), null, null, null, LogRedirectionStrategy.NEVER_PRINT_LOGS)));
   }
 
   @ReactMethod
@@ -410,14 +395,14 @@ public class FFmpegKitReactNativeModule extends ReactContextBaseJavaModule imple
 
   @ReactMethod
   public void ffprobeSession(final ReadableArray readableArray, final Promise promise) {
-    promise.resolve(toMap(new FFprobeSession(toArgumentsArray(readableArray), null, null, LogRedirectionStrategy.NEVER_PRINT_LOGS)));
+    promise.resolve(toMap(FFprobeSession.create(toArgumentsArray(readableArray), null, null, LogRedirectionStrategy.NEVER_PRINT_LOGS)));
   }
 
   // MediaInformationSession
 
   @ReactMethod
   public void mediaInformationSession(final ReadableArray readableArray, final Promise promise) {
-    promise.resolve(toMap(new MediaInformationSession(toArgumentsArray(readableArray), null, null)));
+    promise.resolve(toMap(MediaInformationSession.create(toArgumentsArray(readableArray), null, null)));
   }
 
   // MediaInformationJsonParser
@@ -984,6 +969,12 @@ public class FFmpegKitReactNativeModule extends ReactContextBaseJavaModule imple
     promise.resolve(toStringArray(Packages.getExternalLibraries()));
   }
 
+  @ReactMethod
+  public void uninit(final Promise promise) {
+    this.asyncExecutorService.shutdown();
+    promise.resolve(null);
+  }
+
   protected void enableLogs() {
     logsEnabled.compareAndSet(false, true);
   }
@@ -1144,16 +1135,18 @@ public class FFmpegKitReactNativeModule extends ReactContextBaseJavaModule imple
   }
 
   protected static WritableMap toMap(final MediaInformation mediaInformation) {
-    WritableMap map = Arguments.createMap();
-
     if (mediaInformation != null) {
+      WritableMap map = Arguments.createMap();
+
       JSONObject allProperties = mediaInformation.getAllProperties();
       if (allProperties != null) {
         map = toMap(allProperties);
       }
-    }
 
-    return map;
+      return map;
+    } else {
+      return null;
+    }
   }
 
   protected static WritableMap toMap(final JSONObject jsonObject) {
