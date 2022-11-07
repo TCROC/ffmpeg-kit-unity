@@ -664,8 +664,6 @@ overwrite_file "${BASEDIR}"/src/ffmpeg/libavutil/x86/emms.h "${FFMPEG_LIBRARY_PA
 
 overwrite_file "${BASEDIR}"/src/ffmpeg/config_components.h "${FFMPEG_LIBRARY_PATH}"/include/config_components.h 1>>"${BASEDIR}"/build.log 2>&1
 
-git checkout "${BASEDIR}"/src/ffmpeg/libavformat 1>>"${BASEDIR}"/build.log 2>&1
-
 if [ $? -eq 0 ]; then
   echo "ok"
 else

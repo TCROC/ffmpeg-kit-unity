@@ -29,10 +29,12 @@
 #define DLL_EXPORT 
 #endif
 
-#define THREAD_LOCAL __thread
+//#define THREAD_LOCAL __thread
+#define THREAD_LOCAL
 #define THREAD_LOCAL_MUST __thread
 #include <stdatomic.h>
 #include "libavutil/thread.h"
+#include <string.h>
 
 #include "config.h"
 #include "config_components.h"
@@ -437,6 +439,17 @@ static void lock() {
 }
 static void unlock() {
     atomic_flag_clear(&g_lock);
+    av_usleep(0);
+}
+
+static atomic_flag g_init_lock = ATOMIC_FLAG_INIT;
+static void init_lock() {
+    while (atomic_flag_test_and_set(&g_init_lock)) {
+        av_usleep(0);
+    }
+}
+static void init_unlock() {
+    atomic_flag_clear(&g_init_lock);
     av_usleep(0);
 }
 
@@ -1162,7 +1175,6 @@ static void calculate_display_rect(SDL_Rect *rect,
                                    int scr_xleft, int scr_ytop, int scr_width, int scr_height,
                                    int pic_width, int pic_height, AVRational pic_sar)
 {
-#if 0
     AVRational aspect_ratio = pic_sar;
     int64_t width, height, x, y;
 
@@ -1184,7 +1196,6 @@ static void calculate_display_rect(SDL_Rect *rect,
     rect->y = scr_ytop  + y;
     rect->w = FFMAX((int)width,  1);
     rect->h = FFMAX((int)height, 1);
-#endif
 }
 
 static void get_sdl_pix_fmt_and_blendmode(int format, Uint32 *sdl_pix_fmt, SDL_BlendMode *sdl_blendmode)
@@ -1363,7 +1374,7 @@ static void video_image_display(VideoState *is)
     }
 #endif
 
-    calculate_display_rect(&rect, is->xleft, is->ytop, is->width, is->height, vp->width, vp->height, vp->sar);
+    //calculate_display_rect(&rect, is->xleft, is->ytop, is->width, is->height, vp->width, vp->height, vp->sar);
     set_sdl_yuv_conversion_mode(vp->frame);
 
     if (!vp->uploaded) {
@@ -1728,9 +1739,9 @@ static void video_display(VideoState *is)
 
     //SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     //SDL_RenderClear(renderer);
-    if (is->audio_st && is->show_mode != SHOW_MODE_VIDEO)
+    /*if (is->audio_st && is->show_mode != SHOW_MODE_VIDEO)
         video_audio_display(is);
-    else if (is->video_st)
+    else */if (is->video_st)
         video_image_display(is);
     //SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ABGR8888, is->unity_data, is->width * 4);
     //SDL_RenderPresent(renderer);
@@ -2494,6 +2505,7 @@ static int decoder_start(Decoder *d, int (*fn)(void *), const char *thread_name,
 #else
     int inner_ret = pthread_create(&d->decoder_tid, NULL, fn, arg);
     if (inner_ret != 0) {
+        av_log(NULL, AV_LOG_FATAL, "pthread_create() on decoder_start() is error: %d\n", inner_ret);
         return AVERROR(inner_ret);
     }
 #endif
@@ -3196,8 +3208,12 @@ static void *read_thread(void *arg)
     }
     */
 
+    av_log(NULL, AV_LOG_FATAL, "test1\n");
+
     memset(st_index, -1, sizeof(st_index));
     is->eof = 0;
+
+    av_log(NULL, AV_LOG_FATAL, "test2\n");
 
     pkt = av_packet_alloc();
     if (!pkt) {
@@ -3233,20 +3249,31 @@ static void *read_thread(void *arg)
     }
     is->ic = ic;
 
+    av_log(NULL, AV_LOG_FATAL, "test3\n");
+
     if (genpts)
         ic->flags |= AVFMT_FLAG_GENPTS;
 
     av_format_inject_global_side_data(ic);
 
+    av_log(NULL, AV_LOG_FATAL, "test4\n");
+
     if (find_stream_info) {
+        av_log(NULL, AV_LOG_FATAL, "test4-1\n");
         AVDictionary **opts = setup_find_stream_info_opts(ic, codec_opts);
         int orig_nb_streams = ic->nb_streams;
 
+        av_log(NULL, AV_LOG_FATAL, "test4-2\n");
+
         err = avformat_find_stream_info(ic, opts);
+
+        av_log(NULL, AV_LOG_FATAL, "test4-3\n");
 
         for (i = 0; i < orig_nb_streams; i++)
             av_dict_free(&opts[i]);
         av_freep(&opts);
+
+        av_log(NULL, AV_LOG_FATAL, "test4-4\n");
 
         if (err < 0) {
             av_log(NULL, AV_LOG_WARNING,
@@ -3254,20 +3281,32 @@ static void *read_thread(void *arg)
             ret = -1;
             goto fail;
         }
+
+        av_log(NULL, AV_LOG_FATAL, "test4-5\n");
     }
+
+    av_log(NULL, AV_LOG_FATAL, "test5\n");
 
     if (ic->pb)
         ic->pb->eof_reached = 0; // FIXME hack, ffplay maybe should not use avio_feof() to test for the end
+
+    av_log(NULL, AV_LOG_FATAL, "test6\n");
 
     if (seek_by_bytes < 0)
         seek_by_bytes = !(ic->iformat->flags & AVFMT_NO_BYTE_SEEK) &&
                         !!(ic->iformat->flags & AVFMT_TS_DISCONT) &&
                         strcmp("ogg", ic->iformat->name);
 
+    av_log(NULL, AV_LOG_FATAL, "test7\n");
+
     is->max_frame_duration = (ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
+
+    av_log(NULL, AV_LOG_FATAL, "test8\n");
 
     if (!window_title && (t = av_dict_get(ic->metadata, "title", NULL, 0)))
         window_title = av_asprintf("%s - %s", t->value, input_filename);
+
+    av_log(NULL, AV_LOG_FATAL, "test9\n");
 
     /* if seeking requested, we execute it */
     if (start_time != AV_NOPTS_VALUE) {
@@ -3284,10 +3323,16 @@ static void *read_thread(void *arg)
         }
     }
 
+    av_log(NULL, AV_LOG_FATAL, "test10\n");
+
     is->realtime = is_realtime(ic);
+
+    av_log(NULL, AV_LOG_FATAL, "test11\n");
 
     if (show_status)
         av_dump_format(ic, 0, is->filename, 0);
+
+    av_log(NULL, AV_LOG_FATAL, "test12\n");
 
     for (i = 0; i < ic->nb_streams; i++) {
         AVStream *st = ic->streams[i];
@@ -3303,6 +3348,8 @@ static void *read_thread(void *arg)
             st_index[i] = INT_MAX;
         }
     }
+
+    av_log(NULL, AV_LOG_FATAL, "test13\n");
 
     if (!video_disable)
         st_index[AVMEDIA_TYPE_VIDEO] =
@@ -3323,19 +3370,26 @@ static void *read_thread(void *arg)
                                  st_index[AVMEDIA_TYPE_VIDEO]),
                                 NULL, 0);
 
+    av_log(NULL, AV_LOG_FATAL, "test14\n");
+
     is->show_mode = show_mode;
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
         AVStream *st = ic->streams[st_index[AVMEDIA_TYPE_VIDEO]];
         AVCodecParameters *codecpar = st->codecpar;
         AVRational sar = av_guess_sample_aspect_ratio(ic, st, NULL);
-        if (codecpar->width)
+        if (codecpar->width) {
             set_default_window_size(codecpar->width, codecpar->height, sar);
+        }
     }
+
+    av_log(NULL, AV_LOG_FATAL, "test15\n");
 
     /* open the streams */
     if (st_index[AVMEDIA_TYPE_AUDIO] >= 0) {
         stream_component_open(is, st_index[AVMEDIA_TYPE_AUDIO]);
     }
+
+    av_log(NULL, AV_LOG_FATAL, "test16\n");
 
     ret = -1;
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
@@ -3348,6 +3402,8 @@ static void *read_thread(void *arg)
         stream_component_open(is, st_index[AVMEDIA_TYPE_SUBTITLE]);
     }
 
+    av_log(NULL, AV_LOG_FATAL, "test17\n");
+
     if (is->video_stream < 0 && is->audio_stream < 0) {
         av_log(NULL, AV_LOG_FATAL, "Failed to open file '%s' or configure filtergraph\n",
                is->filename);
@@ -3355,8 +3411,16 @@ static void *read_thread(void *arg)
         goto fail;
     }
 
+    av_log(NULL, AV_LOG_FATAL, "test18\n");
+
     if (infinite_buffer < 0 && is->realtime)
         infinite_buffer = 1;
+
+    init_unlock();
+    lock();
+    add_is_pair(is->unity_id, is);
+    add_to_array(&g_running_ids, &g_running_ids_count, is->unity_id);
+    unlock();
 
     for (;;) {
         if (is->abort_request)
@@ -3370,8 +3434,8 @@ static void *read_thread(void *arg)
         }
 #if CONFIG_RTSP_DEMUXER || CONFIG_MMSH_PROTOCOL
         if (is->paused &&
-                (!strcmp(ic->iformat->name, "rtsp") /*||
-                 (ic->pb && !strncmp(input_filename, "mmsh:", 5))*/)) {
+                (!strcmp(ic->iformat->name, "rtsp") ||
+                 (ic->pb && !strncmp(input_filename, "mmsh:", 5)))) {
             /* wait 10 ms to avoid trying to get another packet */
             /* XXX: horrible */
             //SDL_Delay(10);
@@ -3602,6 +3666,7 @@ static VideoState *stream_open(const char *filename,
 #endif
     if (inner_ret != 0/*!is->read_tid*/) {
         //av_log(NULL, AV_LOG_FATAL, "SDL_CreateThread(): %s\n", SDL_GetError());
+        av_log(NULL, AV_LOG_FATAL, "pthread_create() on stream_open() is error: %d\n", inner_ret);
 fail:
         stream_close(is);
         return NULL;
@@ -4369,11 +4434,6 @@ static void *unity_ffplay_main_thread(void *main_args_void_ptr)
     is->log_output_file_pointer = g_log_output_file_pointer;
     is->unity_id = id;
 
-    lock();
-    add_is_pair(id, is);
-    add_to_array(&g_running_ids, &g_running_ids_count, id);
-    unlock();
-
     register_exit(unity_ffplay_exit_in_running);
 
     event_loop(is);
@@ -4418,6 +4478,10 @@ fail:
 
 DLL_EXPORT int ffplay_start(int argc, char **argv, int id, const char *file_path)
 {
+    init_lock();
+
+    uninit_opts();
+
     MainArgs *main_args = av_malloc(sizeof(MainArgs));
     main_args->argc = argc;
     main_args->argv = argv;
