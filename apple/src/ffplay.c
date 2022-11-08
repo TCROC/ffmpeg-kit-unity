@@ -3208,12 +3208,8 @@ static void *read_thread(void *arg)
     }
     */
 
-    av_log(NULL, AV_LOG_FATAL, "test1\n");
-
     memset(st_index, -1, sizeof(st_index));
     is->eof = 0;
-
-    av_log(NULL, AV_LOG_FATAL, "test2\n");
 
     pkt = av_packet_alloc();
     if (!pkt) {
@@ -3249,31 +3245,20 @@ static void *read_thread(void *arg)
     }
     is->ic = ic;
 
-    av_log(NULL, AV_LOG_FATAL, "test3\n");
-
     if (genpts)
         ic->flags |= AVFMT_FLAG_GENPTS;
 
     av_format_inject_global_side_data(ic);
 
-    av_log(NULL, AV_LOG_FATAL, "test4\n");
-
     if (find_stream_info) {
-        av_log(NULL, AV_LOG_FATAL, "test4-1\n");
         AVDictionary **opts = setup_find_stream_info_opts(ic, codec_opts);
         int orig_nb_streams = ic->nb_streams;
 
-        av_log(NULL, AV_LOG_FATAL, "test4-2\n");
-
         err = avformat_find_stream_info(ic, opts);
-
-        av_log(NULL, AV_LOG_FATAL, "test4-3\n");
 
         for (i = 0; i < orig_nb_streams; i++)
             av_dict_free(&opts[i]);
         av_freep(&opts);
-
-        av_log(NULL, AV_LOG_FATAL, "test4-4\n");
 
         if (err < 0) {
             av_log(NULL, AV_LOG_WARNING,
@@ -3281,32 +3266,20 @@ static void *read_thread(void *arg)
             ret = -1;
             goto fail;
         }
-
-        av_log(NULL, AV_LOG_FATAL, "test4-5\n");
     }
-
-    av_log(NULL, AV_LOG_FATAL, "test5\n");
 
     if (ic->pb)
         ic->pb->eof_reached = 0; // FIXME hack, ffplay maybe should not use avio_feof() to test for the end
-
-    av_log(NULL, AV_LOG_FATAL, "test6\n");
 
     if (seek_by_bytes < 0)
         seek_by_bytes = !(ic->iformat->flags & AVFMT_NO_BYTE_SEEK) &&
                         !!(ic->iformat->flags & AVFMT_TS_DISCONT) &&
                         strcmp("ogg", ic->iformat->name);
 
-    av_log(NULL, AV_LOG_FATAL, "test7\n");
-
     is->max_frame_duration = (ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
-
-    av_log(NULL, AV_LOG_FATAL, "test8\n");
 
     if (!window_title && (t = av_dict_get(ic->metadata, "title", NULL, 0)))
         window_title = av_asprintf("%s - %s", t->value, input_filename);
-
-    av_log(NULL, AV_LOG_FATAL, "test9\n");
 
     /* if seeking requested, we execute it */
     if (start_time != AV_NOPTS_VALUE) {
@@ -3323,16 +3296,10 @@ static void *read_thread(void *arg)
         }
     }
 
-    av_log(NULL, AV_LOG_FATAL, "test10\n");
-
     is->realtime = is_realtime(ic);
-
-    av_log(NULL, AV_LOG_FATAL, "test11\n");
 
     if (show_status)
         av_dump_format(ic, 0, is->filename, 0);
-
-    av_log(NULL, AV_LOG_FATAL, "test12\n");
 
     for (i = 0; i < ic->nb_streams; i++) {
         AVStream *st = ic->streams[i];
@@ -3348,8 +3315,6 @@ static void *read_thread(void *arg)
             st_index[i] = INT_MAX;
         }
     }
-
-    av_log(NULL, AV_LOG_FATAL, "test13\n");
 
     if (!video_disable)
         st_index[AVMEDIA_TYPE_VIDEO] =
@@ -3370,8 +3335,6 @@ static void *read_thread(void *arg)
                                  st_index[AVMEDIA_TYPE_VIDEO]),
                                 NULL, 0);
 
-    av_log(NULL, AV_LOG_FATAL, "test14\n");
-
     is->show_mode = show_mode;
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
         AVStream *st = ic->streams[st_index[AVMEDIA_TYPE_VIDEO]];
@@ -3382,14 +3345,10 @@ static void *read_thread(void *arg)
         }
     }
 
-    av_log(NULL, AV_LOG_FATAL, "test15\n");
-
     /* open the streams */
     if (st_index[AVMEDIA_TYPE_AUDIO] >= 0) {
         stream_component_open(is, st_index[AVMEDIA_TYPE_AUDIO]);
     }
-
-    av_log(NULL, AV_LOG_FATAL, "test16\n");
 
     ret = -1;
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
@@ -3402,16 +3361,12 @@ static void *read_thread(void *arg)
         stream_component_open(is, st_index[AVMEDIA_TYPE_SUBTITLE]);
     }
 
-    av_log(NULL, AV_LOG_FATAL, "test17\n");
-
     if (is->video_stream < 0 && is->audio_stream < 0) {
         av_log(NULL, AV_LOG_FATAL, "Failed to open file '%s' or configure filtergraph\n",
                is->filename);
         ret = -1;
         goto fail;
     }
-
-    av_log(NULL, AV_LOG_FATAL, "test18\n");
 
     if (infinite_buffer < 0 && is->realtime)
         infinite_buffer = 1;
@@ -4098,7 +4053,8 @@ static void opt_input_file(void *optctx, const char *filename)
         av_log(NULL, AV_LOG_FATAL,
                "Argument '%s' provided as input filename, but '%s' was already specified.\n",
                 filename, input_filename);
-        exit(1);
+        //exit(1);
+        unity_ffplay_exit(1);
     }
     if (!strcmp(filename, "-"))
         filename = "pipe:";
@@ -4347,6 +4303,7 @@ static void *unity_ffplay_main_thread(void *main_args_void_ptr)
 
     show_banner(argc, argv, options);
 
+    input_filename = NULL;
     parse_options(NULL, argc, argv, options, opt_input_file);
 
     if (!input_filename) {
@@ -4354,7 +4311,8 @@ static void *unity_ffplay_main_thread(void *main_args_void_ptr)
         av_log(NULL, AV_LOG_FATAL, "An input file must be specified\n");
         av_log(NULL, AV_LOG_FATAL,
                "Use -h to get full help or, even better, run 'man %s'\n", program_name);
-        exit(1);
+        //exit(1);
+        unity_ffplay_exit(1);
     }
 
     if (display_disable) {
@@ -4481,6 +4439,10 @@ DLL_EXPORT int ffplay_start(int argc, char **argv, int id, const char *file_path
     init_lock();
 
     uninit_opts();
+
+    const char* program_name_local = "ffplay";
+    program_name = program_name_local;
+    program_birth_year = 2003;
 
     MainArgs *main_args = av_malloc(sizeof(MainArgs));
     main_args->argc = argc;
