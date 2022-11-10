@@ -89,7 +89,7 @@ static __thread int report_file_level = AV_LOG_DEBUG;
 
 extern void ffmpegkit_log_callback_function(void *ptr, int level, const char* format, va_list vargs);
 extern void (*report_callback)(int, float, float, int64_t, int, double, double);
-extern __thread char *program_name;
+extern /*__thread*/ char *program_name;
 
 int show_license(void *optctx, const char *opt, const char *arg)
 {

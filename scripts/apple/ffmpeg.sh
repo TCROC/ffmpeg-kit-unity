@@ -487,7 +487,9 @@ ${SED_INLINE} 's/static int av_log_level/__thread int av_log_level/g' "${BASEDIR
 
 ###################################################################
 
+rm -f "${BASEDIR}"/src/ffmpeg/libavformat/unitybuf_wrapper.c 1>>"${BASEDIR}"/build.log 2>&1
 cp -f "${BASEDIR}"/unitybuf_apple/unitybuf_wrapper.c "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
+rm -f "${BASEDIR}"/src/ffmpeg/libavformat/unitybuf_wrapper.h 1>>"${BASEDIR}"/build.log 2>&1
 cp -f "${BASEDIR}"/unitybuf_apple/unitybuf_wrapper.h "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
 git checkout "${BASEDIR}"/src/ffmpeg/libavformat/Makefile 1>>"${BASEDIR}"/build.log 2>&1
 sed -i -e "s/version\.h/version\.h unitybuf_wrapper\.h/g" "${BASEDIR}"/src/ffmpeg/libavformat/Makefile 1>>"${BASEDIR}"/build.log 2>&1

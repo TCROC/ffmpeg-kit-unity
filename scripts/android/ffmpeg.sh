@@ -414,6 +414,16 @@ fi
 
 ###################################################################
 
+rm -f "${BASEDIR}"/src/ffmpeg/libavformat/unitybuf_wrapper.c 1>>"${BASEDIR}"/build.log 2>&1
+#cp -f "${BASEDIR}"/unitybuf_apple/unitybuf_wrapper.c "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
+rm -f "${BASEDIR}"/src/ffmpeg/libavformat/unitybuf_wrapper.h 1>>"${BASEDIR}"/build.log 2>&1
+#cp -f "${BASEDIR}"/unitybuf_apple/unitybuf_wrapper.h "${BASEDIR}"/src/ffmpeg/libavformat/ 1>>"${BASEDIR}"/build.log 2>&1
+git checkout "${BASEDIR}"/src/ffmpeg/libavformat/Makefile 1>>"${BASEDIR}"/build.log 2>&1
+#sed -i -e "s/version\.h/version\.h unitybuf_wrapper\.h/g" "${BASEDIR}"/src/ffmpeg/libavformat/Makefile 1>>"${BASEDIR}"/build.log 2>&1
+#sed -i -e "s/unix\.o/unix\.o\nOBJS\-\$\(CONFIG_UNITYBUF_PROTOCOL\)         \+\= unitybuf_wrapper\.o/g" "${BASEDIR}"/src/ffmpeg/libavformat/Makefile 1>>"${BASEDIR}"/build.log 2>&1
+git checkout "${BASEDIR}"/src/ffmpeg/libavformat/protocols.c 1>>"${BASEDIR}"/build.log 2>&1
+#sed -i -e "s/extern const URLProtocol ff_libzmq_protocol\;/extern const URLProtocol ff_libzmq_protocol\;\nextern const URLProtocol ff_unitybuf_protocol\;/g" "${BASEDIR}"/src/ffmpeg/libavformat/protocols.c 1>>"${BASEDIR}"/build.log 2>&1
+
 ./configure \
   --cross-prefix="${HOST}-" \
   --sysroot="${ANDROID_SYSROOT}" \

@@ -95,12 +95,12 @@
 #include "compat/w32dlfcn.h"
 #endif
 
-__thread char *program_name;
-__thread int program_birth_year;
+/*__thread*/ char *program_name;
+/*__thread*/ int program_birth_year;
 
-__thread AVDictionary *sws_dict;
-__thread AVDictionary *swr_opts;
-__thread AVDictionary *format_opts, *codec_opts;
+/*__thread*/ AVDictionary *sws_dict;
+/*__thread*/ AVDictionary *swr_opts;
+/*__thread*/ AVDictionary *format_opts, *codec_opts;
 
 __thread int hide_banner = 0;
 __thread int longjmp_value = 0;
