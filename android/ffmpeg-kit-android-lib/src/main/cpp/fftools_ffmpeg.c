@@ -4780,6 +4780,7 @@ void cancel_operation(long id)
 }
 
 __thread OptionDef *ffmpeg_options = NULL;
+extern void ffmpegkit_log_callback_function(void *ptr, int level, const char* format, va_list vargs);
 
 int ffmpeg_execute(int argc, char **argv)
 {
@@ -5233,6 +5234,8 @@ int ffmpeg_execute(int argc, char **argv)
     if (savedCode == 0) {
 
         ffmpeg_var_cleanup();
+
+        av_log_set_callback(ffmpegkit_log_callback_function);
 
         init_dynload();
 

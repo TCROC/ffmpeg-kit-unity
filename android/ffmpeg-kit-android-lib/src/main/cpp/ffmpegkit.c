@@ -530,7 +530,7 @@ void *callbackThreadFunction() {
 
     LOGD("Async callback block started.\n");
 
-    while(redirectionEnabled) {
+    while(1/*redirectionEnabled*/) {
 
         struct CallbackData *callbackData = callbackDataRemove();
         if (callbackData != NULL) {
@@ -721,13 +721,15 @@ JNIEXPORT void JNICALL Java_com_arthenica_ffmpegkit_FFmpegKitConfig_enableNative
 
     mutexUnlock();
 
-    int rc = pthread_create(&callbackThread, 0, callbackThreadFunction, 0);
-    if (rc != 0) {
-        LOGE("Failed to create callback thread (rc=%d).\n", rc);
-        return;
+    if (callbackThread == NULL) {
+        int rc = pthread_create(&callbackThread, 0, callbackThreadFunction, 0);
+        if (rc != 0) {
+            LOGE("Failed to create callback thread (rc=%d).\n", rc);
+            return;
+        }
     }
 
-    av_log_set_callback(ffmpegkit_log_callback_function);
+    //av_log_set_callback(ffmpegkit_log_callback_function);
     set_report_callback(ffmpegkit_statistics_callback_function);
 }
 
@@ -749,7 +751,7 @@ JNIEXPORT void JNICALL Java_com_arthenica_ffmpegkit_FFmpegKitConfig_disableNativ
 
     mutexUnlock();
 
-    av_log_set_callback(av_log_default_callback);
+    //av_log_set_callback(av_log_default_callback);
     set_report_callback(NULL);
 
     monitorNotify();
@@ -942,4 +944,8 @@ JNIEXPORT jboolean JNICALL Java_com_arthenica_ffmpegkit_FFmpegKitConfig_isEmptyI
     } else {
         return JNI_FALSE;
     }
+}
+
+int global_get_redirectionEnabled() {
+    return redirectionEnabled;
 }
