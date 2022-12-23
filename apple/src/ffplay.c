@@ -4328,10 +4328,17 @@ static void *unity_ffplay_main_thread(void *main_args_void_ptr)
     int id = main_args->id;
     const char *file_path = main_args->file_path;
 
+#ifdef __APPLE__
+    if (file_path != NULL) {
+        av_log_set_callback(log_callback_myfile);
+        g_log_output_file_pointer = fopen(file_path, "w");
+    }
+#else
     av_log_set_callback(log_callback_myfile);
     if (file_path != NULL) {
         g_log_output_file_pointer = fopen(file_path, "w");
     }
+#endif
 
     g_id = id;
 
