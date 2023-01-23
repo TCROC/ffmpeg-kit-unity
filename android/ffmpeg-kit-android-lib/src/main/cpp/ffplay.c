@@ -444,6 +444,12 @@ static void lock() {
         av_usleep(0);
     }
 }
+static int try_lock() {
+    if (atomic_flag_test_and_set(&g_lock)) {
+        return 0;
+    }
+    return 1;
+}
 static void unlock() {
     atomic_flag_clear(&g_lock);
     av_usleep(0);
@@ -554,14 +560,27 @@ DLL_EXPORT int ffplay_is_running(int id)
 {
     int ret = 0;
     if (g_running_ids_count > 0) {
-        lock();
+        int is_locked = 0;
+        int count = 0;
+        do
+        {
+            is_locked = try_lock();
+            count++;
+            if (is_locked == 0) {
+                av_usleep(100);
+            }
+        } while (is_locked == 0 && count < 100);
+
         for (int loop = 0; loop < g_running_ids_count; loop++) {
             if (g_running_ids[loop] == id) {
                 ret = 1;
                 break;
             }
         }
-        unlock();
+
+        if (is_locked != 0) {
+            unlock();
+        }
     }
 
     return ret;
@@ -2747,6 +2766,8 @@ static int synchronize_audio(VideoState *is, int nb_samples)
     return wanted_nb_samples;
 }
 
+static void reset_audio(VideoState *is);
+
 /**
  * Decode one audio frame and return its uncompressed size.
  *
@@ -2767,8 +2788,12 @@ static int audio_decode_frame(VideoState *is)
     do {
 #if 1//defined(_WIN32)
         while (frame_queue_nb_remaining(&is->sampq) == 0) {
-            if ((av_gettime_relative() - audio_callback_time) > 1000000LL * is->audio_hw_buf_size / is->audio_tgt.bytes_per_sec / 2)
+            if ((av_gettime_relative() - audio_callback_time) > 1000000LL * is->audio_hw_buf_size / is->audio_tgt.bytes_per_sec / 2) {
+                if (unity_reset_audio) {
+                    reset_audio(is);
+                }
                 return -1;
+            }
             av_usleep (1000);
         }
 #endif
@@ -4328,17 +4353,10 @@ static void *unity_ffplay_main_thread(void *main_args_void_ptr)
     int id = main_args->id;
     const char *file_path = main_args->file_path;
 
-#ifdef __APPLE__
-    if (file_path != NULL) {
-        av_log_set_callback(log_callback_myfile);
-        g_log_output_file_pointer = fopen(file_path, "w");
-    }
-#else
     av_log_set_callback(log_callback_myfile);
     if (file_path != NULL) {
         g_log_output_file_pointer = fopen(file_path, "w");
     }
-#endif
 
     g_id = id;
 
@@ -4682,9 +4700,11 @@ DLL_EXPORT int ffplay_seek_incr_seconds(int id, double incr)
 {
     VideoState *cur_stream = get_is(id);
 
+#if 0
     if (unity_reset_audio && cur_stream) {
         reset_audio(cur_stream);
     }
+#endif
 
     if (cur_stream == NULL || cur_stream->ic == NULL) {
         return -1;
@@ -4698,9 +4718,11 @@ DLL_EXPORT int ffplay_seek(int id, double pos)
 {
     VideoState *cur_stream = get_is(id);
 
+#if 0
     if (unity_reset_audio && cur_stream) {
         reset_audio(cur_stream);
     }
+#endif
 
     if (cur_stream == NULL || cur_stream->ic == NULL || pos > 1.001 || pos < -0.001) {
         return -1;
