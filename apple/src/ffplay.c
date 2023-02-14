@@ -3577,15 +3577,17 @@ static void *read_thread(void *arg)
                 skip_video_packet = 0;
                 prev_key_packet = 1;
             }
-            else if (is->videoq.nb_packets < MIN_FRAMES && skip_video_packet == 0) {
+            else /*if (is->videoq.nb_packets < 10 && skip_video_packet == 0)*/ {
                 packet_queue_put(&is->videoq, pkt);
                 prev_key_packet = 0;
             }
+            /*
             else {
                 av_packet_unref(pkt);
                 skip_video_packet = 1;
                 prev_key_packet = 0;
             }
+            */
         } else if (pkt->stream_index == is->subtitle_stream && pkt_in_play_range) {
             packet_queue_put(&is->subtitleq, pkt);
         } else {
