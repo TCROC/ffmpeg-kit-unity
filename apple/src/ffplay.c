@@ -437,6 +437,7 @@ static int unity_audio_channels = -1;
 static int unity_audio_sample_rate = -1;
 static int unity_audio_spec_size = -2;
 static int unity_reset_audio = 1;
+static int unity_max_packets = INT_MAX;
 
 static atomic_flag g_lock = ATOMIC_FLAG_INIT;
 static void lock() {
@@ -3577,17 +3578,15 @@ static void *read_thread(void *arg)
                 skip_video_packet = 0;
                 prev_key_packet = 1;
             }
-            else /*if (is->videoq.nb_packets < 10 && skip_video_packet == 0)*/ {
+            else if (is->videoq.nb_packets < unity_max_packets /*&& skip_video_packet == 0*/) {
                 packet_queue_put(&is->videoq, pkt);
                 prev_key_packet = 0;
             }
-            /*
             else {
                 av_packet_unref(pkt);
                 skip_video_packet = 1;
                 prev_key_packet = 0;
             }
-            */
         } else if (pkt->stream_index == is->subtitle_stream && pkt_in_play_range) {
             packet_queue_put(&is->subtitleq, pkt);
         } else {
@@ -4824,4 +4823,9 @@ DLL_EXPORT void ffplay_force_reset_audio(int id)
     if (is != NULL) {
         reset_audio(is);
     }
+}
+
+DLL_EXPORT void ffplay_set_max_packets(int val)
+{
+    unity_max_packets = val;
 }
