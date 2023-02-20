@@ -4,16 +4,16 @@ It's not usually needed as the files you built from scratch are included in this
 The default library build command is:
 - iOS
 ```
-./ios.sh --enable-ios-audiotoolbox --enable-ios-avfoundation --enable-ios-bzip2 --enable-ios-videotoolbox --enable-ios-zlib --enable-ios-libiconv --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame --disable-arm64-simulator --xcframework
+./ios.sh --enable-ios-audiotoolbox --enable-ios-avfoundation --enable-ios-bzip2 --enable-ios-videotoolbox --enable-ios-zlib --enable-ios-libiconv --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame --enable-sdl --disable-arm64-simulator --xcframework
 ```
 - Android
 ```
 export PATH=/Users/username/Library/Android/sdk/cmake/3.18.1/bin:$PATH
-./android.sh --enable-android-media-codec --enable-android-zlib --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls  --enable-lame
+./android.sh --enable-android-media-codec --enable-android-zlib --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame --enable-sdl
 ```
 - Mac
 ```
-./macos.sh --enable-macos-audiotoolbox --enable-macos-avfoundation --enable-macos-bzip2 --enable-macos-videotoolbox --enable-macos-zlib --enable-macos-libiconv --enable-macos-coreimage --enable-macos-opencl --enable-macos-opengl --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame
+./macos.sh --enable-macos-audiotoolbox --enable-macos-avfoundation --enable-macos-bzip2 --enable-macos-videotoolbox --enable-macos-zlib --enable-macos-libiconv --enable-macos-coreimage --enable-macos-opencl --enable-macos-opengl --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame --enable-sdl
 ```
 Then replace [this repository](https://github.com/NON906/FfmpegUnityMacPlugin) with the generated files and then build.
 
