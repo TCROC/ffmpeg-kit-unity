@@ -806,8 +806,10 @@ void assert_avoptions(AVDictionary *m)
 {
     const AVDictionaryEntry *t;
     if ((t = av_dict_get(m, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
-        av_log(NULL, AV_LOG_FATAL, "Option %s not found.\n", t->key);
-        exit_program(1);
+        if (strcmp(t->key, "scan_all_pmts") != 0) {
+            av_log(NULL, AV_LOG_FATAL, "Option %s not found.\n", t->key);
+            exit_program(1);
+        }
     }
 }
 
