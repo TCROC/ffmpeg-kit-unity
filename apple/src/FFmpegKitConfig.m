@@ -57,6 +57,7 @@ static NSRecursiveLock* sessionHistoryLock;
 /** Session control variables */
 #define SESSION_MAP_SIZE 1000
 static atomic_short sessionMap[SESSION_MAP_SIZE];
+static atomic_short sessionForceStop[SESSION_MAP_SIZE];
 static atomic_int sessionInTransitMessageCountMap[SESSION_MAP_SIZE];
 
 static dispatch_queue_t asyncDispatchQueue;
@@ -401,6 +402,10 @@ void cancelSession(long sessionId) {
     atomic_store(&sessionMap[sessionId % SESSION_MAP_SIZE], 2);
 }
 
+void set_force_stop_flag(long id) {
+    atomic_store(&sessionForceStop[id % SESSION_MAP_SIZE], 1);
+}
+
 /**
  * Checks whether a cancel request for the given session id exists in the session map.
  *
@@ -409,6 +414,15 @@ void cancelSession(long sessionId) {
  */
 int cancelRequested(long sessionId) {
     if (atomic_load(&sessionMap[sessionId % SESSION_MAP_SIZE]) == 2) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int getForceStopFlag(long id) {
+    if (atomic_load(&sessionForceStop[id % SESSION_MAP_SIZE]) == 1) {
+        atomic_store(&sessionForceStop[id % SESSION_MAP_SIZE], 0);
         return 1;
     } else {
         return 0;
