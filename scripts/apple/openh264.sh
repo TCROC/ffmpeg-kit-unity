@@ -58,7 +58,30 @@ make -j$(get_cpu_count) \
   SDK_MIN="${IOS_MIN_VERSION}" \
   SDKROOT="${SDK_PATH}" \
   STATIC_LDFLAGS="-lc++" \
-  install-static || return 1
+  install-headers openh264.pc || return 1
 
-# MANUALLY COPY PKG-CONFIG FILES
-cp ${BASEDIR}/src/${LIB_NAME}/openh264-static.pc ${INSTALL_PKG_CONFIG_DIR}/openh264.pc || return 1
+if [ $FFMPEG_KIT_BUILD_TYPE = ios -a ${ARCH} = arm64 ] ; then
+  install -m 644 openh264.pc ${INSTALL_PKG_CONFIG_DIR}/openh264.pc || return 1
+
+  curl -o ./libopenh264-2.3.1-ios.a.bz2 http://ciscobinary.openh264.org/libopenh264-2.3.1-ios.a.bz2 || return 1
+  bunzip2 libopenh264-2.3.1-ios.a.bz2 || return 1
+  mkdir -p "${LIB_INSTALL_PREFIX}"/lib || return 1
+  cp libopenh264-2.3.1-ios.a "${LIB_INSTALL_PREFIX}"/lib/libopenh264.a || return 1
+else
+  case ${ARCH} in
+    arm64*)
+      ARCH_NAME=arm64
+      ;;
+    x86-64*)
+      ARCH_NAME=x64
+      ;;
+  esac
+
+  ${SED_INLINE} "s/-lopenh264/-lopenh264-${ARCH_NAME}/g" openh264.pc
+  install -m 644 openh264.pc ${INSTALL_PKG_CONFIG_DIR}/openh264.pc || return 1
+
+  curl -o ./libopenh264-2.3.1-mac-${ARCH_NAME}.dylib.bz2 http://ciscobinary.openh264.org/libopenh264-2.3.1-mac-${ARCH_NAME}.dylib.bz2 || return 1
+  bunzip2 libopenh264-2.3.1-mac-${ARCH_NAME}.dylib.bz2 || return 1
+  mkdir -p "${LIB_INSTALL_PREFIX}"/lib || return 1 
+  cp libopenh264-2.3.1-mac-${ARCH_NAME}.dylib "${LIB_INSTALL_PREFIX}"/lib/libopenh264-${ARCH_NAME}.dylib || return 1
+fi

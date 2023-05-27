@@ -46,7 +46,25 @@ make -j$(get_cpu_count) \
   NDK_TOOLCHAIN_VERSION=clang \
   AR="$AR" \
   ASM_OPTIONS=${ASM_OPTIONS} \
-  TARGET="android-${API}" install-static || return 1
+  TARGET="android-${API}" install-headers openh264.pc || return 1
 
-# MANUALLY COPY PKG-CONFIG FILES
-cp "${BASEDIR}"/src/"${LIB_NAME}"/openh264-static.pc "${INSTALL_PKG_CONFIG_DIR}"/openh264.pc || return 1
+install -m 644 openh264.pc ${INSTALL_PKG_CONFIG_DIR}/openh264.pc || return 1
+
+case ${ARCH} in
+arm-v7a | arm-v7a-neon)
+  ARCH_NAME=arm
+  ;;
+arm64-v8a)
+  ARCH_NAME=arm64
+  ;;
+x86-64)
+  ARCH_NAME=x64
+  ;;
+*)
+  ARCH_NAME=${ARCH}
+  ;;
+esac
+curl -o ./libopenh264-2.3.1-android-${ARCH_NAME}.7.so.bz2 http://ciscobinary.openh264.org/libopenh264-2.3.1-android-${ARCH_NAME}.7.so.bz2 || return 1
+bunzip2 libopenh264-2.3.1-android-${ARCH_NAME}.7.so.bz2 || return 1
+mkdir -p "${LIB_INSTALL_PREFIX}"/lib || return 1 
+cp libopenh264-2.3.1-android-${ARCH_NAME}.7.so "${LIB_INSTALL_PREFIX}"/lib/libopenh264.so || return 1
