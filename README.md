@@ -4,7 +4,7 @@ It's not usually needed as the files you built from scratch are included in this
 The default library build command is:
 - iOS
 ```
-./ios.sh --enable-ios-audiotoolbox --enable-ios-avfoundation --enable-ios-bzip2 --enable-ios-videotoolbox --enable-ios-zlib --enable-ios-libiconv --enable-openh264 --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame --enable-sdl  --enable-libxml2 --disable-arm64-simulator --disable-x86-64-mac-catalyst --disable-arm64-mac-catalyst --disable-arm64e --disable-x86-64 --xcframework
+./ios.sh --enable-ios-audiotoolbox --enable-ios-avfoundation --enable-ios-bzip2 --enable-ios-videotoolbox --enable-ios-zlib --enable-ios-libiconv --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame --enable-sdl  --enable-libxml2 --disable-arm64-simulator --disable-x86-64-mac-catalyst --disable-arm64-mac-catalyst --disable-arm64e --disable-x86-64 --xcframework
 ```
 - Android
 ```
