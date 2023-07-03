@@ -13,9 +13,9 @@ export PATH=/Users/username/Library/Android/sdk/cmake/3.18.1/bin:$PATH
 ```
 - Mac
 ```
-./macos.sh --enable-macos-audiotoolbox --enable-macos-avfoundation --enable-macos-bzip2 --enable-macos-videotoolbox --enable-macos-zlib --enable-macos-libiconv --enable-macos-coreimage --enable-macos-opencl --enable-macos-opengl --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame --enable-sdl --enable-libxml2
+./macos-no-symlinks.sh --enable-macos-audiotoolbox --enable-macos-avfoundation --enable-macos-bzip2 --enable-macos-videotoolbox --enable-macos-zlib --enable-macos-libiconv --enable-macos-coreimage --enable-macos-opencl --enable-macos-opengl --enable-libvpx --enable-libaom --enable-opus --enable-libvorbis --enable-libtheora --enable-libwebp --enable-gmp --enable-gnutls --enable-lame --enable-sdl --enable-libxml2
 ```
-Then replace [this repository](https://github.com/NON906/FfmpegUnityMacPlugin) with the generated files and then build.
+Then replace [this repository](https://github.com/TCROC/FfmpegUnityMacPlugin) with the generated files and then build.
 
 Original README.md is follow:
 
